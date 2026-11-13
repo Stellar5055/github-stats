@@ -5,6 +5,7 @@
 :root {
   color-scheme: light;
   --bg: #fafaf7;
+  --top-rule: var(--ink);
   --ink: #1b1b19;
   --ink-hover: #000000;
   --on-ink: #ffffff;
@@ -40,6 +41,7 @@
 :root[data-theme='dark'] {
   color-scheme: dark;
   --bg: #181816;
+  --top-rule: var(--rule-strong);
   --ink: #f1efe8;
   --ink-hover: #ffffff;
   --on-ink: #181816;
@@ -89,7 +91,7 @@ body::before {
   content: '';
   display: block;
   height: 3px;
-  background: var(--ink);
+  background: var(--top-rule);
 }
 
 img {
@@ -222,38 +224,27 @@ p {
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--muted);
-  text-decoration: none;
   white-space: nowrap;
+}
+
+.header-link {
+  text-decoration: underline;
+  text-decoration-color: currentColor;
 }
 
 .header-link:hover {
   color: var(--accent);
+  text-decoration-color: currentColor;
 }
 
 html:not(.js) .theme-toggle {
   display: none;
 }
 
-.theme-toggle {
-  display: inline-flex;
-  min-width: 44px;
+.theme-toggle.utility-button {
+  min-width: 56px;
   min-height: 44px;
-  align-items: center;
-  justify-content: center;
-  padding: 0 6px;
-  border: 0;
-  background: transparent;
-  color: var(--muted);
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-.theme-toggle:hover {
-  color: var(--accent);
-  text-decoration: underline;
-  text-underline-offset: 0.18em;
+  padding-inline: 8px;
 }
 
 /* Boot shell */
@@ -410,6 +401,34 @@ html.is-loading #boot {
   color: var(--accent);
 }
 
+.utility-button {
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 10px;
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  text-decoration: none;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: background var(--transition), border-color var(--transition),
+    color var(--transition);
+}
+
+.utility-button:hover {
+  border-color: var(--accent);
+  background: var(--surface-hover);
+  color: var(--accent);
+}
+
 /* Landing details */
 
 .examples {
@@ -446,6 +465,7 @@ html.is-loading #boot {
 
 .footer-inner {
   display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 24px;
   padding-block: 22px;
@@ -453,20 +473,18 @@ html.is-loading #boot {
   font-size: 11px;
 }
 
-.footer-link {
-  margin-left: 6px;
-  padding-block: 6px;
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  text-decoration: none;
-  white-space: nowrap;
+.footer-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px 16px;
 }
 
-.footer-link:hover {
-  color: var(--accent);
-  text-decoration: underline;
+.footer-actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 /* Method page */
@@ -474,6 +492,11 @@ html.is-loading #boot {
 .method-page {
   max-width: 760px;
   padding-block: clamp(56px, 9vh, 96px) 80px;
+}
+
+.method-back-top {
+  min-height: 44px;
+  margin-bottom: 28px;
 }
 
 .method-title {
@@ -531,6 +554,10 @@ html.is-loading #boot {
   font-size: 10px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
+}
+
+.method-back a {
+  text-decoration-color: currentColor;
 }
 
 @media (max-width: 720px) {
@@ -1726,11 +1753,20 @@ html.dialog-open {
 
   .footer-inner {
     flex-direction: column;
-    gap: 4px;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .footer-meta {
+    justify-content: flex-start;
   }
 }
 
 @media (max-width: 560px) {
+  .header-inner {
+    gap: 16px;
+  }
+
   .header-note {
     display: none;
   }

@@ -557,7 +557,7 @@ export function siteHeader(mode: 'landing' | 'profile'): string {
             ? '<a class="header-link no-print" href="./">New search</a>'
             : '<span class="header-note">Public data only</span>'
         }
-        <button type="button" class="theme-toggle no-print" data-theme-toggle aria-label="Switch to dark theme" title="Switch to dark theme">Dark</button>
+        <button type="button" class="utility-button theme-toggle no-print" data-theme-toggle aria-label="Switch to dark theme" title="Switch to dark theme">Dark</button>
       </div>
     </div>
   </header>`;
@@ -567,11 +567,13 @@ export function siteFooter(): string {
   return `<footer class="site-footer">
     <div class="shell footer-inner">
       <span>GitHub Stats</span>
-      <span>
-        Public data from the GitHub API. Not affiliated with GitHub.
-        <a class="footer-link" href="./method.html">How it works</a>
-        <a class="footer-link" href="https://github.com/Stellar5055/github-stats" target="_blank" rel="noreferrer">Source <span aria-hidden="true">↗</span></a>
-      </span>
+      <div class="footer-meta">
+        <span>Public data from the GitHub API. Not affiliated with GitHub.</span>
+        <span class="footer-actions">
+          <a class="utility-button" href="./method.html">How it works</a>
+          <a class="utility-button" href="https://github.com/Stellar5055/github-stats" target="_blank" rel="noreferrer">View source <span aria-hidden="true">↗</span></a>
+        </span>
+      </div>
     </div>
   </footer>`;
 }
