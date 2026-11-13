@@ -376,6 +376,21 @@ html.is-loading #boot {
   font-size: 11px;
 }
 
+.footer-link {
+  margin-left: 6px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.footer-link:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
 /* Profile */
 
 .profile {

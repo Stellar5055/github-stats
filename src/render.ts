@@ -472,7 +472,10 @@ export function siteFooter(): string {
   return `<footer class="site-footer">
     <div class="shell footer-inner">
       <span>GitHub Stats</span>
-      <span>Public data from the GitHub API. Not affiliated with GitHub.</span>
+      <span>
+        Public data from the GitHub API. Not affiliated with GitHub.
+        <a class="footer-link" href="https://github.com/Stellar5055/github-stats" target="_blank" rel="noreferrer">Source <span aria-hidden="true">↗</span></a>
+      </span>
     </div>
   </footer>`;
 }
