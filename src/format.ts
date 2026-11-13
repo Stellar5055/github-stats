@@ -146,6 +146,18 @@ export function formatRelative(iso: string | null, now = Date.now()): string {
   return relativeFormatter.format(Math.round(diffDays / 365.25), 'year');
 }
 
+export function formatUpdated(epochMs: number, now = Date.now()): string {
+  const diff = Math.max(0, now - epochMs);
+  const minute = 60_000;
+  const hour = 60 * minute;
+
+  if (diff < minute) return 'just now';
+  if (diff < hour) return `${Math.floor(diff / minute)} min ago`;
+  if (diff < 24 * hour) return `${Math.floor(diff / hour)} hr ago`;
+
+  return formatRelative(new Date(epochMs).toISOString(), now);
+}
+
 export function normalizeWebsite(raw: string | null): Website | null {
   if (!raw) return null;
 

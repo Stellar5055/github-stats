@@ -1,9 +1,12 @@
 import { fetchProfile, fetchRepoDetails, isGitHubApiError } from './api';
 import { readCache, writeCache } from './cache';
 import { deriveProfile } from './derive';
-import { formatPulledAt, truncate } from './format';
+import { formatPulledAt, formatUpdated, truncate } from './format';
 import { parseHandle } from './parse';
 import {
+  INITIAL_VISIBLE_REPOS,
+  REPO_BATCH_SIZE,
+  renderActivitySection,
   renderError,
   renderLoading,
   renderProfile,
@@ -28,7 +31,8 @@ const status = document.querySelector<HTMLDivElement>('#status');
 let currentView: ProfileView | null = null;
 let currentHandle = '';
 let currentSort: SortKey = 'stars';
-let showAllRepos = false;
+let shownRepos = INITIAL_VISIBLE_REPOS;
+let activityWindow: 30 | 90 = 90;
 let controller: AbortController | null = null;
 const repoDetailCache = new Map<string, RepoDetailData>();
 let repoDetailController: AbortController | null = null;
@@ -66,7 +70,19 @@ function toAppError(error: unknown): AppError {
   };
 }
 
-async function load(raw: string, force = false): Promise<void> {
+interface LoadOptions {
+  force?: boolean;
+  preserveUi?: boolean;
+}
+
+function defaultActivityWindow(view: ProfileView): 30 | 90 {
+  return view.recentActivity.totalEvents > 0 ? 30 : 90;
+}
+
+async function load(
+  raw: string,
+  options: LoadOptions = {},
+): Promise<void> {
   const parsed = parseHandle(raw);
 
   if (!parsed.ok) {
@@ -79,18 +95,31 @@ async function load(raw: string, force = false): Promise<void> {
 
   const handle = parsed.handle;
   currentHandle = handle;
-  currentSort = 'stars';
-  showAllRepos = false;
+  const previousScroll = options.preserveUi ? window.scrollY : 0;
+
+  if (!options.preserveUi) {
+    currentSort = 'stars';
+    shownRepos = INITIAL_VISIBLE_REPOS;
+  }
+
+  const currentUrl = new URL(window.location.href);
+  if (currentUrl.searchParams.get('u') !== handle) {
+    currentUrl.searchParams.set('u', handle);
+    window.history.replaceState(null, '', currentUrl);
+  }
 
   controller?.abort();
   controller = new AbortController();
 
   const cached = readCache(handle);
 
-  if (cached && !cached.stale && !force) {
+  if (cached && !cached.stale && !options.force) {
     currentView = deriveProfile(cached.data);
+    if (!options.preserveUi) {
+      activityWindow = defaultActivityWindow(currentView);
+    }
     clearBoot();
-    renderCurrent();
+    renderCurrent(previousScroll);
     announce(`Profile loaded for ${handle}.`);
     return;
   }
@@ -103,7 +132,10 @@ async function load(raw: string, force = false): Promise<void> {
     const data = await fetchProfile(handle, controller.signal);
     writeCache(data);
     currentView = deriveProfile(data);
-    renderCurrent();
+    if (!options.preserveUi) {
+      activityWindow = defaultActivityWindow(currentView);
+    }
+    renderCurrent(previousScroll);
     announce(`Profile loaded for ${handle}.`);
   } catch (error) {
     if (isAbortError(error)) return;
@@ -114,10 +146,13 @@ async function load(raw: string, force = false): Promise<void> {
       (error.kind === 'rate-limit' || error.kind === 'network')
     ) {
       currentView = deriveProfile(cached.data);
+      if (!options.preserveUi) {
+        activityWindow = defaultActivityWindow(currentView);
+      }
       currentView.notices.push(
         `Showing the last saved profile from ${formatPulledAt(cached.data.fetchedAt)}.`,
       );
-      renderCurrent();
+      renderCurrent(previousScroll);
       announce('Showing a cached profile because GitHub could not be reached.');
       return;
     }
@@ -134,17 +169,18 @@ async function load(raw: string, force = false): Promise<void> {
   }
 }
 
-function renderCurrent(): void {
+function renderCurrent(scrollTop = 0): void {
   if (!currentView) return;
 
   setApp(
     renderProfile(currentView, {
       sort: currentSort,
-      showAll: showAllRepos,
+      shown: shownRepos,
+      activityWindow,
     }),
   );
   updateMeta(currentView);
-  window.scrollTo(0, 0);
+  window.scrollTo(0, scrollTop);
 }
 
 function updateMeta(view: ProfileView): void {
@@ -169,7 +205,10 @@ function setMeta(
   element?.setAttribute('content', content);
 }
 
-function rerenderRepos(focus: 'sort' | 'toggle'): void {
+function rerenderRepos(
+  focus: 'sort' | 'more' | 'fewer',
+  previousShown = INITIAL_VISIBLE_REPOS,
+): void {
   if (!currentView) return;
 
   const section = document.querySelector<HTMLElement>('#repos');
@@ -177,18 +216,38 @@ function rerenderRepos(focus: 'sort' | 'toggle'): void {
 
   section.outerHTML = renderReposSection(currentView, {
     sort: currentSort,
-    showAll: showAllRepos,
+    shown: shownRepos,
   });
 
   if (focus === 'sort') {
     document
       .querySelector<HTMLButtonElement>(`[data-sort="${currentSort}"]`)
       ?.focus();
-  } else {
+  } else if (focus === 'more') {
     document
-      .querySelector<HTMLButtonElement>('[data-action="toggle-repos"]')
-      ?.focus();
+      .querySelectorAll<HTMLAnchorElement>('.repo-name')
+      [previousShown]?.focus();
+  } else {
+    document.querySelector<HTMLElement>('#repos-title')?.focus();
   }
+}
+
+function rerenderActivity(): void {
+  if (!currentView) return;
+
+  const section = document.querySelector<HTMLElement>('#activity');
+  if (!section) return;
+
+  section.outerHTML = renderActivitySection(
+    currentView,
+    activityWindow,
+  );
+
+  document
+    .querySelector<HTMLButtonElement>(
+      `[data-activity-window="${activityWindow}"]`,
+    )
+    ?.focus();
 }
 
 function closeRepoDialog(): void {
@@ -281,6 +340,18 @@ document.addEventListener('click', (event) => {
     return;
   }
 
+  const activityButton = target.closest<HTMLButtonElement>(
+    '[data-activity-window]',
+  );
+  if (activityButton) {
+    const value = activityButton.dataset.activityWindow;
+    if (value === '30' || value === '90') {
+      activityWindow = Number(value) as 30 | 90;
+      rerenderActivity();
+    }
+    return;
+  }
+
   const sortButton = target.closest<HTMLButtonElement>('[data-sort]');
   if (sortButton) {
     const key = sortButton.dataset.sort;
@@ -296,16 +367,24 @@ document.addEventListener('click', (event) => {
 
   const action = actionTarget.dataset.action;
 
-  if (action === 'toggle-repos') {
-    showAllRepos = !showAllRepos;
-    rerenderRepos('toggle');
+  if (action === 'show-more') {
+    if (!currentView) return;
+    const previousShown = shownRepos;
+    shownRepos = Math.min(
+      currentView.repos.length,
+      shownRepos + REPO_BATCH_SIZE,
+    );
+    rerenderRepos('more', previousShown);
+  } else if (action === 'show-fewer') {
+    shownRepos = INITIAL_VISIBLE_REPOS;
+    rerenderRepos('fewer');
   } else if (action === 'print') {
     window.print();
   } else if (action === 'copy') {
     void copyLink(actionTarget);
   } else if (action === 'refresh') {
     if (!currentHandle) return;
-    void load(currentHandle, true);
+    void load(currentHandle, { force: true, preserveUi: true });
   } else if (action === 'repo-details') {
     const owner = actionTarget.dataset.owner;
     const repo = actionTarget.dataset.repo;
@@ -316,6 +395,14 @@ document.addEventListener('click', (event) => {
     void load(currentHandle);
   }
 });
+
+window.setInterval(() => {
+  if (!currentView) return;
+  const note = document.querySelector<HTMLElement>('.updated-note');
+  if (note) {
+    note.textContent = `Updated ${formatUpdated(currentView.fetchedAt)}`;
+  }
+}, 60_000);
 
 const raw = new URLSearchParams(window.location.search).get('u');
 

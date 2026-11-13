@@ -22,7 +22,6 @@ import type {
 
 const DAY_MS = 86_400_000;
 const YEAR_MS = 365.25 * DAY_MS;
-const WINDOW_DAYS = 90;
 
 const EVENT_LABELS: Record<string, string> = {
   PushEvent: 'Pushes',
@@ -296,7 +295,11 @@ function buildDetails(
   return details;
 }
 
-function buildActivity(data: ProfileData, now: number): ActivityView {
+function buildActivity(
+  data: ProfileData,
+  now: number,
+  windowDays: number,
+): ActivityView {
   const current = new Date(now);
   const safeNow = Number.isNaN(current.getTime()) ? new Date() : current;
   const endDay = new Date(
@@ -307,7 +310,7 @@ function buildActivity(data: ProfileData, now: number): ActivityView {
     ),
   );
   const startDay = new Date(
-    endDay.getTime() - (WINDOW_DAYS - 1) * DAY_MS,
+    endDay.getTime() - (windowDays - 1) * DAY_MS,
   );
   const startKey = formatDateKey(startDay);
   const endKey = formatDateKey(endDay);
@@ -330,7 +333,7 @@ function buildActivity(data: ProfileData, now: number): ActivityView {
 
   const days: ActivityDay[] = [];
 
-  for (let index = 0; index < WINDOW_DAYS; index += 1) {
+  for (let index = 0; index < windowDays; index += 1) {
     const date = new Date(startDay.getTime() + index * DAY_MS);
     const key = formatDateKey(date);
     days.push({ date: key, count: counts.get(key) ?? 0 });
@@ -356,7 +359,7 @@ function buildActivity(data: ProfileData, now: number): ActivityView {
 
   return {
     days,
-    windowDays: WINDOW_DAYS,
+    windowDays,
     totalEvents,
     activeDays,
     peakCount,
@@ -383,12 +386,21 @@ export function deriveProfile(
   const languages = buildLanguageSlices(languageCounts);
   const repos = sortRepos(nonForkRepos.map(toRepoItem), 'stars');
   const details = buildDetails(data, nonForkRepos, now);
-  const activity = buildActivity(data, now);
+  const activity = buildActivity(data, now, 90);
+  const recentActivity = buildActivity(data, now, 30);
   const years = yearsSince(user.created_at, now);
+  const partialHint = data.reposTruncated
+    ? `${formatNumber(nonForkRepos.length)} analyzed`
+    : undefined;
 
   const stats: Stat[] = [
     { key: 'repos', label: 'Public repos', value: formatNumber(repoTotal) },
-    { key: 'stars', label: 'Stars', value: formatNumber(totalStars) },
+    {
+      key: 'stars',
+      label: 'Stars',
+      value: formatNumber(totalStars),
+      hint: partialHint,
+    },
     {
       key: 'followers',
       label: 'Followers',
@@ -403,6 +415,7 @@ export function deriveProfile(
       key: 'languages',
       label: 'Languages',
       value: formatNumber(languageCounts.size),
+      hint: partialHint,
     },
     {
       key: 'years',
@@ -443,6 +456,7 @@ export function deriveProfile(
     repos,
     details,
     activity,
+    recentActivity,
     notices,
     fetchedAt: data.fetchedAt,
     repoTotal,

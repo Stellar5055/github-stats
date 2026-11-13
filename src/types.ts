@@ -209,6 +209,7 @@ export interface ProfileView {
   repos: RepoItem[];
   details: Detail[];
   activity: ActivityView;
+  recentActivity: ActivityView;
   notices: string[];
   /** Epoch milliseconds when the data was fetched. */
   fetchedAt: number;

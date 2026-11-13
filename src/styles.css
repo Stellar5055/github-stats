@@ -378,6 +378,7 @@ html.is-loading #boot {
 
 .footer-link {
   margin-left: 6px;
+  padding-block: 6px;
   font-family: var(--font-mono);
   font-size: 10px;
   letter-spacing: 0.08em;
@@ -602,6 +603,15 @@ html.is-loading #boot {
   text-transform: uppercase;
 }
 
+.stat-hint {
+  display: block;
+  margin-top: 4px;
+  color: var(--faint);
+  font-size: 8px;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
 /* Notices */
 
 .notices {
@@ -782,7 +792,8 @@ html.is-loading #boot {
 }
 
 .sort-button {
-  padding: 4px 6px;
+  min-height: 32px;
+  padding: 6px 8px;
   border: 0;
   border-bottom: 2px solid transparent;
   background: transparent;
@@ -802,7 +813,7 @@ html.is-loading #boot {
 
 .repo-head {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 110px 72px 104px;
+  grid-template-columns: minmax(0, 1fr) 110px 72px 104px 44px;
   gap: 16px;
   padding-bottom: 8px;
   border-bottom: 1px solid var(--rule-strong);
@@ -830,7 +841,7 @@ html.is-loading #boot {
 
 .repo-item {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 110px 72px 104px;
+  grid-template-columns: minmax(0, 1fr) 110px 72px 104px 44px;
   gap: 16px;
   align-items: start;
   padding: 16px 5px;
@@ -866,20 +877,24 @@ html.is-loading #boot {
   color: var(--accent);
 }
 
-.repo-details {
-  padding: 0 0 1px;
+.repo-open {
+  display: inline-flex;
+  width: 44px;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
   border: 0;
-  border-bottom: 1px solid var(--rule-strong);
+  border-radius: 2px;
   background: transparent;
   color: var(--muted);
-  font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-family: var(--font-sans);
+  font-size: 24px;
+  line-height: 1;
 }
 
-.repo-details:hover {
-  border-bottom-color: var(--accent);
+.repo-open:hover {
+  background: #f4f3ee;
   color: var(--accent);
 }
 
@@ -928,8 +943,11 @@ html.is-loading #boot {
 }
 
 .show-all {
+  display: inline-flex;
+  min-height: 36px;
   margin-top: 16px;
-  padding: 0 0 2px;
+  padding: 6px 0 2px;
+  align-items: center;
   border: 0;
   border-bottom: 1px solid currentColor;
   background: transparent;
@@ -942,6 +960,26 @@ html.is-loading #boot {
 
 .show-all:hover {
   color: var(--ink);
+}
+
+.repo-collapse {
+  display: inline-flex;
+  min-height: 36px;
+  margin-left: auto;
+  padding: 6px 0;
+  align-items: center;
+  border: 0;
+  border-bottom: 1px solid currentColor;
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.repo-collapse:hover {
+  color: var(--accent);
 }
 
 /* Details */
@@ -1019,6 +1057,34 @@ html.is-loading #boot {
   fill: var(--ink);
 }
 
+.activity-window {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.activity-window-button {
+  min-height: 30px;
+  padding: 4px 6px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.activity-window-button:hover {
+  color: var(--ink);
+}
+
+.activity-window-button.is-active {
+  border-bottom-color: var(--accent);
+  color: var(--ink);
+}
+
 .activity-axis {
   display: flex;
   justify-content: space-between;
@@ -1073,7 +1139,23 @@ html.is-loading #boot {
   margin-top: 22px;
 }
 
+.updated-note {
+  align-self: center;
+  color: var(--faint);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
 /* Empty, loading, error */
+
+.empty-line {
+  margin: 0 0 8px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
 
 .empty-state {
   padding: 20px 0 8px;
@@ -1216,11 +1298,11 @@ html.dialog-open {
 
 .repo-dialog-close {
   position: absolute;
-  top: 16px;
-  right: 16px;
+  top: 12px;
+  right: 12px;
   display: inline-flex;
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   align-items: center;
   justify-content: center;
   padding: 0;
@@ -1511,16 +1593,32 @@ html.dialog-open {
   }
 
   .repo-item {
-    display: block;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 44px;
+    grid-template-areas:
+      'main open'
+      'meta meta';
+    gap: 6px 12px;
     padding: 16px 0;
     margin-inline: 0;
   }
 
+  .repo-main {
+    grid-area: main;
+  }
+
+  .repo-open {
+    grid-area: open;
+    align-self: start;
+    justify-self: end;
+  }
+
   .repo-meta {
     display: flex;
+    grid-area: meta;
     flex-wrap: wrap;
     gap: 4px 14px;
-    margin-top: 8px;
+    margin-top: 2px;
   }
 
   .repo-cell {
@@ -1535,6 +1633,14 @@ html.dialog-open {
   .repo-stars,
   .repo-updated {
     text-align: left;
+  }
+
+  .sort-button {
+    min-height: 40px;
+  }
+
+  .activity-window-button {
+    min-height: 40px;
   }
 
   .section {
@@ -1747,6 +1853,10 @@ html.dialog-open {
     font-size: 6.5pt;
   }
 
+  .stat-hint {
+    font-size: 5.5pt;
+  }
+
   .notices {
     margin-top: 10pt;
   }
@@ -1842,6 +1952,10 @@ html.dialog-open {
     break-inside: avoid;
   }
 
+  .repo-open {
+    display: none !important;
+  }
+
   .repo-list.is-collapsed .repo-item:nth-child(-n + 10) {
     display: grid !important;
   }
@@ -1911,6 +2025,10 @@ html.dialog-open {
   a {
     color: #000;
     text-decoration: none;
+  }
+
+  .empty-line {
+    font-size: 8pt;
   }
 
   .empty-state {

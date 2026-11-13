@@ -16,7 +16,6 @@ const RESERVED = new Set([
   'features',
   'gist',
   'git',
-  'github',
   'help',
   'home',
   'issues',

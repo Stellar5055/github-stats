@@ -17,7 +17,7 @@ Working name: **GitHub Stats**. Built as a small project for Hack Club Crossroad
 - Breaks down the language mix by primary language.
 - Lists repositories with descriptions, languages, stars, and last push. Sort by stars, recency, or name.
 - Adds details: join date, location, company, website, most starred repo, top license, median repo age, description rate, and public gists.
-- Draws 90 days of public activity and an event mix.
+- Draws 30 or 90 days of public activity and an event mix.
 - Includes a print stylesheet for a clean printed record (usually one or two pages).
 - Caches successful lookups locally for 15 minutes and falls back to the last saved profile when GitHub is unreachable.
 

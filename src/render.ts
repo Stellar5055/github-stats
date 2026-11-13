@@ -8,6 +8,7 @@ import {
   formatPercent,
   formatPulledAt,
   formatRelative,
+  formatUpdated,
   pluralize,
 } from './format';
 import { sortRepos } from './derive';
@@ -25,12 +26,16 @@ import type {
 
 export interface RepoUiState {
   sort: SortKey;
-  showAll: boolean;
+  shown: number;
+}
+
+export interface ProfileUiState extends RepoUiState {
+  activityWindow: 30 | 90;
 }
 
 export function renderProfile(
   view: ProfileView,
-  ui: RepoUiState,
+  ui: ProfileUiState,
 ): string {
   return `<div class="page">
     ${siteHeader('profile')}
@@ -44,11 +49,12 @@ export function renderProfile(
         ${renderReposSection(view, ui)}
         ${renderDetails(view)}
       </div>
-      ${renderActivity(view)}
+      ${renderActivitySection(view, ui.activityWindow)}
       ${renderFinePrint(view)}
       <div class="profile-actions no-print">
         <button type="button" class="button button-secondary" data-action="print">Print this page</button>
         <button type="button" class="button button-quiet" data-action="refresh">Refresh</button>
+        <span class="updated-note">Updated ${escapeHtml(formatUpdated(view.fetchedAt))}</span>
         <button type="button" class="button button-quiet" data-action="copy">Copy link</button>
         <a class="button button-quiet" href="./">Search another</a>
       </div>
@@ -102,44 +108,76 @@ export function renderError(error: AppError, handle = ''): string {
   </div>`;
 }
 
+export const INITIAL_VISIBLE_REPOS = 8;
+export const REPO_BATCH_SIZE = 20;
+
 export function renderReposSection(
   view: ProfileView,
   ui: RepoUiState,
 ): string {
   const sorted = sortRepos(view.repos, ui.sort);
-  const rows = sorted.map((repo) => renderRepo(repo, view.handle)).join('');
-  const showToggle =
-    view.repos.length > 8
-      ? `<button type="button" class="show-all no-print" data-action="toggle-repos" aria-expanded="${ui.showAll}" aria-controls="repo-list">${ui.showAll ? 'Show fewer' : `Show all ${formatNumber(view.repos.length)}`}</button>`
+  const total = sorted.length;
+  const shown =
+    total === 0
+      ? 0
+      : Math.min(
+          Math.max(ui.shown, INITIAL_VISIBLE_REPOS),
+          total,
+        );
+  const renderedCount = Math.min(total, Math.max(shown, 10));
+  const rows = sorted
+    .slice(0, renderedCount)
+    .map((repo) => renderRepo(repo, view.handle))
+    .join('');
+  const collapsed = shown < renderedCount;
+  const remaining = total - shown;
+  const step = Math.min(REPO_BATCH_SIZE, remaining);
+
+  const showMore =
+    remaining > 0
+      ? `<button type="button" class="show-all no-print" data-action="show-more">Show ${step} more</button>`
+      : '';
+  const showFewer =
+    shown > INITIAL_VISIBLE_REPOS
+      ? '<button type="button" class="repo-collapse no-print" data-action="show-fewer">Show fewer</button>'
+      : '';
+  const countLabel =
+    shown < total
+      ? `${formatNumber(shown)} of ${formatNumber(total)}`
+      : formatNumber(total);
+
+  const toolbar =
+    total > 0
+      ? `<div class="repo-toolbar no-print">
+          <span class="toolbar-label">Sort</span>
+          <div class="sort-buttons" role="group" aria-label="Sort repositories">
+            ${renderSortButton('stars', 'Stars', ui.sort)}
+            ${renderSortButton('recent', 'Recent', ui.sort)}
+            ${renderSortButton('name', 'Name', ui.sort)}
+          </div>
+          ${showFewer}
+        </div>`
       : '';
 
-  const body = view.repos.length
-    ? `<div class="repo-head" aria-hidden="true">
-        <span>Repository</span>
-        <span>Language</span>
-        <span>Stars</span>
-        <span>Pushed</span>
-      </div>
-      <ol class="repo-list${ui.showAll ? '' : ' is-collapsed'}" id="repo-list">${rows}</ol>
-      ${showToggle}`
-    : `<div class="empty-state">
-        <p>${view.forkCount > 0 ? 'No original repositories. Only forks were found.' : 'No public repositories yet.'}</p>
-      </div>`;
+  const body =
+    total > 0
+      ? `<div class="repo-head" aria-hidden="true">
+          <span>Repository</span>
+          <span>Language</span>
+          <span>Stars</span>
+          <span>Pushed</span>
+        </div>
+        <ol class="repo-list${collapsed ? ' is-collapsed' : ''}" id="repo-list">${rows}</ol>
+        ${showMore}`
+      : `<p class="empty-line">${view.forkCount > 0 ? 'No original repositories. Only forks were found.' : 'No public repositories yet.'}</p>`;
 
   return `<section class="section repos-section" id="repos" aria-labelledby="repos-title">
     <div class="section-head">
-      <h2 id="repos-title" class="section-title">Repositories</h2>
-      <span class="section-note">${escapeHtml(formatNumber(view.analyzedRepoCount))}</span>
+      <h2 id="repos-title" class="section-title" tabindex="-1">Repositories</h2>
+      <span class="section-note no-print">${escapeHtml(countLabel)}</span>
     </div>
-    ${view.repos.length > 10 ? `<p class="print-only print-note">First 10 of ${escapeHtml(formatNumber(view.repos.length))} repositories shown in print.</p>` : ''}
-    <div class="repo-toolbar no-print">
-      <span class="toolbar-label">Sort</span>
-      <div class="sort-buttons" role="group" aria-label="Sort repositories">
-        ${renderSortButton('stars', 'Stars', ui.sort)}
-        ${renderSortButton('recent', 'Recent', ui.sort)}
-        ${renderSortButton('name', 'Name', ui.sort)}
-      </div>
-    </div>
+    ${total > 10 ? `<p class="print-only print-note">First 10 of ${escapeHtml(formatNumber(total))} repositories shown in print.</p>` : ''}
+    ${toolbar}
     ${body}
   </section>`;
 }
@@ -201,7 +239,7 @@ function renderStats(stats: Stat[]): string {
       .map(
         (stat) => `<div class="stat stat--${stat.key}">
           <span class="stat-value">${escapeHtml(stat.value)}</span>
-          <span class="stat-label">${escapeHtml(stat.label)}</span>
+          <span class="stat-label">${escapeHtml(stat.label)}${stat.hint ? `<span class="stat-hint">${escapeHtml(stat.hint)}</span>` : ''}</span>
         </div>`,
       )
       .join('')}
@@ -244,7 +282,7 @@ function renderLanguages(view: ProfileView): string {
             .join('')}
         </ul>
         <p class="section-footnote">By primary language, per repository.</p>`
-      : `<div class="empty-state"><p>No primary language recorded.</p></div>`;
+      : `<p class="empty-line">No primary language recorded.</p>`;
 
   return `<section class="section languages-section" aria-labelledby="languages-title">
     <div class="section-head">
@@ -281,7 +319,6 @@ function renderRepo(repo: RepoItem, owner: string): string {
       <div class="repo-title-row">
         <a class="repo-name" href="${escapeHtml(repo.url)}" target="_blank" rel="noreferrer">${escapeHtml(repo.name)}</a>
         ${archived}
-        <button type="button" class="repo-details no-print" data-action="repo-details" data-owner="${escapeHtml(owner)}" data-repo="${escapeHtml(repo.name)}" aria-haspopup="dialog" aria-controls="repo-dialog" aria-label="Details for ${escapeHtml(repo.name)}">Details</button>
       </div>
       ${description}
     </div>
@@ -290,6 +327,7 @@ function renderRepo(repo: RepoItem, owner: string): string {
       <span class="repo-cell repo-stars" data-label="Stars">${escapeHtml(formatNumber(repo.stars))}</span>
       <span class="repo-cell repo-updated" data-label="Pushed" title="${pushedTitle}">${pushed}</span>
     </div>
+    <button type="button" class="repo-open no-print" data-action="repo-details" data-owner="${escapeHtml(owner)}" data-repo="${escapeHtml(repo.name)}" aria-label="Details for ${escapeHtml(repo.name)}" aria-haspopup="dialog" aria-controls="repo-dialog"><span aria-hidden="true">›</span></button>
   </li>`;
 }
 
@@ -327,19 +365,18 @@ function renderDetail(detail: Detail): string {
   </div>`;
 }
 
-function renderActivity(view: ProfileView): string {
-  const activity = view.activity;
+export function renderActivitySection(
+  view: ProfileView,
+  windowDays: 30 | 90,
+): string {
+  const activity =
+    windowDays === 30 ? view.recentActivity : view.activity;
 
   const body =
     activity.totalEvents > 0
       ? `<p class="activity-summary"><strong>${escapeHtml(formatNumber(activity.activeDays))}</strong> active days <span class="summary-sep">·</span> <strong>${escapeHtml(formatNumber(activity.totalEvents))}</strong> public events</p>
         ${renderActivityChart(activity)}
-        <div class="activity-axis">
-          <span>${escapeHtml(formatMonthShort(activity.days[0].date))}</span>
-          <span>${escapeHtml(formatMonthShort(activity.days[30].date))}</span>
-          <span>${escapeHtml(formatMonthShort(activity.days[60].date))}</span>
-          <span>Today</span>
-        </div>
+        ${renderActivityAxis(activity)}
         ${
           activity.mix.length > 0
             ? `<ul class="event-mix">
@@ -353,18 +390,52 @@ function renderActivity(view: ProfileView): string {
             : ''
         }
         ${activity.truncated ? '<p class="section-footnote">Based on the 300 most recent public events.</p>' : ''}`
-      : `<div class="empty-state">
-          <p>No public events in the last 90 days.</p>
-          <p>Private work stays private.</p>
-        </div>`;
+      : `<p class="empty-line">No public events in the last ${activity.windowDays} days. Private work stays private.</p>`;
 
-  return `<section class="section activity-section" aria-labelledby="activity-title">
+  return `<section class="section activity-section" id="activity" aria-labelledby="activity-title">
     <div class="section-head">
       <h2 id="activity-title" class="section-title">Activity</h2>
-      <span class="section-note">Last 90 days</span>
+      <div class="activity-window no-print" role="group" aria-label="Activity window">
+        ${renderActivityWindowButton(30, windowDays)}
+        ${renderActivityWindowButton(90, windowDays)}
+      </div>
+      <span class="section-note print-only">Last ${windowDays} days</span>
     </div>
     ${body}
   </section>`;
+}
+
+function renderActivityWindowButton(
+  days: 30 | 90,
+  active: 30 | 90,
+): string {
+  const selected = days === active;
+
+  return `<button type="button" class="activity-window-button${selected ? ' is-active' : ''}" data-activity-window="${days}" aria-pressed="${selected}">${days} days</button>`;
+}
+
+function renderActivityAxis(activity: ActivityView): string {
+  const days = activity.days;
+  const middle = Math.floor(days.length / 3);
+  const late = Math.floor((days.length * 2) / 3);
+  const labels =
+    activity.windowDays <= 31
+      ? [
+          formatDayLabel(days[0].date),
+          formatDayLabel(days[middle].date),
+          formatDayLabel(days[late].date),
+          'Today',
+        ]
+      : [
+          formatMonthShort(days[0].date),
+          formatMonthShort(days[middle].date),
+          formatMonthShort(days[late].date),
+          'Today',
+        ];
+
+  return `<div class="activity-axis">${labels
+    .map((label) => `<span>${escapeHtml(label)}</span>`)
+    .join('')}</div>`;
 }
 
 function renderActivityChart(activity: ActivityView): string {
@@ -392,7 +463,7 @@ function renderActivityChart(activity: ActivityView): string {
     })
     .join('');
 
-  const label = `Activity over the last 90 days: ${pluralize(activity.totalEvents, 'public event')} across ${pluralize(activity.activeDays, 'active day')}.`;
+  const label = `Activity over the last ${activity.windowDays} days: ${pluralize(activity.totalEvents, 'public event')} across ${pluralize(activity.activeDays, 'active day')}.`;
 
   return `<svg class="activity-chart" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" role="img" aria-label="${escapeHtml(label)}">${bars}</svg>`;
 }

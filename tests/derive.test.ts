@@ -158,6 +158,8 @@ describe('deriveProfile', () => {
     expect(view.activity.days).toHaveLength(90);
     expect(view.activity.days.at(-1)?.date).toBe('2026-11-12');
     expect(view.activity.totalEvents).toBe(3);
+    expect(view.recentActivity.days).toHaveLength(30);
+    expect(view.recentActivity.totalEvents).toBe(2);
     expect(view.activity.activeDays).toBe(3);
     expect(view.activity.peakCount).toBe(1);
     expect(view.activity.busiestDay?.date).toBe('2026-11-12');
@@ -217,6 +219,12 @@ describe('deriveProfile', () => {
     const view = deriveProfile(data, NOW);
 
     expect(view.notices.join(' ')).toContain('300');
+    expect(
+      view.stats.find((stat) => stat.key === 'stars')?.hint,
+    ).toBe('1 analyzed');
+    expect(
+      view.stats.find((stat) => stat.key === 'languages')?.hint,
+    ).toBe('1 analyzed');
   });
 
   it('sorts repositories by stars, recency, and name', () => {

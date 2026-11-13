@@ -22,10 +22,12 @@ describe('parseHandle', () => {
     expectHandle('foo-bar', 'foo-bar');
     expectHandle('a1-b2', 'a1-b2');
     expectHandle('123', '123');
+    expectHandle('github', 'github');
   });
 
   it('accepts profile URLs', () => {
     expectHandle('https://github.com/sindresorhus', 'sindresorhus');
+    expectHandle('https://github.com/github', 'github');
     expectHandle('github.com/sindresorhus/', 'sindresorhus');
     expectHandle('www.github.com/foo?tab=repositories', 'foo');
     expectHandle('//github.com/foo', 'foo');

@@ -11,6 +11,7 @@ import {
   formatPercent,
   formatPulledAt,
   formatRelative,
+  formatUpdated,
   normalizeWebsite,
   pluralize,
   truncate,
@@ -137,6 +138,20 @@ describe('formatRelative', () => {
   it('handles missing and invalid dates', () => {
     expect(formatRelative(null, now)).toBe('—');
     expect(formatRelative('nope', now)).toBe('—');
+  });
+});
+
+describe('formatUpdated', () => {
+  const now = Date.parse('2026-11-12T12:00:00Z');
+
+  it('formats recent ages', () => {
+    expect(formatUpdated(now - 30_000, now)).toBe('just now');
+    expect(formatUpdated(now - 5 * 60_000, now)).toBe('5 min ago');
+    expect(formatUpdated(now - 2 * 3_600_000, now)).toBe('2 hr ago');
+  });
+
+  it('falls back to calendar days', () => {
+    expect(formatUpdated(now - 25 * 3_600_000, now)).toBe('yesterday');
   });
 });
 
