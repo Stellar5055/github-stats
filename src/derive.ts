@@ -3,6 +3,7 @@ import {
   formatFullDate,
   formatNumber,
   formatPercent,
+  formatRelative,
   normalizeWebsite,
   pluralize,
 } from './format';
@@ -200,6 +201,14 @@ function buildDetails(
     details.push({
       label: 'Joined',
       value: formatFullDate(data.user.created_at),
+    });
+  }
+
+  const latestEvent = data.events[0]?.created_at;
+  if (latestEvent) {
+    details.push({
+      label: 'Last public activity',
+      value: formatRelative(latestEvent, now),
     });
   }
 

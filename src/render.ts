@@ -46,6 +46,7 @@ export function renderProfile(
       ${renderFinePrint(view)}
       <div class="profile-actions no-print">
         <button type="button" class="button button-secondary" data-action="print">Print this page</button>
+        <button type="button" class="button button-quiet" data-action="refresh">Refresh</button>
         <button type="button" class="button button-quiet" data-action="copy">Copy link</button>
         <a class="button button-quiet" href="./">Search another</a>
       </div>

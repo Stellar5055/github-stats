@@ -1,5 +1,5 @@
 import { fetchProfile, isGitHubApiError } from './api';
-import { readCache, writeCache } from './cache';
+import { clearCache, readCache, writeCache } from './cache';
 import { deriveProfile } from './derive';
 import { formatPulledAt, truncate } from './format';
 import { parseHandle } from './parse';
@@ -214,6 +214,10 @@ document.addEventListener('click', (event) => {
     window.print();
   } else if (action === 'copy') {
     void copyLink(actionTarget);
+  } else if (action === 'refresh') {
+    if (!currentHandle) return;
+    clearCache(currentHandle);
+    void load(currentHandle);
   } else if (action === 'retry') {
     void load(currentHandle);
   }
