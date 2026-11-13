@@ -2,9 +2,6 @@ node_modules/
 dist/
 .vite/
 .playwright-cli/
-.env
-.env.*
-!.env.example
 *.local
 .DS_Store
 Thumbs.db

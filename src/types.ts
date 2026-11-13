@@ -91,21 +91,6 @@ export interface RepoDetailData {
   release: GitHubReleaseSummary | null;
 }
 
-export interface ContributionDay {
-  date: string;
-  count: number;
-}
-
-export interface ContributionWeek {
-  days: ContributionDay[];
-}
-
-export interface ContributionData {
-  total: number;
-  weeks: ContributionWeek[];
-  viewer?: string;
-}
-
 export interface GitHubEvent {
   id: string;
   type: string;

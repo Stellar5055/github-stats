@@ -1,10 +1,5 @@
 import { fetchProfile, fetchRepoDetails, isGitHubApiError } from './api';
 import { readCache, writeCache } from './cache';
-import {
-  fetchContributions,
-  hasContributionProxy,
-  renderContributions,
-} from './contributions';
 import { deriveProfile } from './derive';
 import { formatPulledAt, truncate } from './format';
 import { parseHandle } from './parse';
@@ -37,7 +32,6 @@ let showAllRepos = false;
 let controller: AbortController | null = null;
 const repoDetailCache = new Map<string, RepoDetailData>();
 let repoDetailController: AbortController | null = null;
-let contributionsController: AbortController | null = null;
 
 function clearBoot(): void {
   document.documentElement.classList.remove('is-loading');
@@ -52,7 +46,6 @@ function setApp(html: string): void {
 
   document.documentElement.classList.remove('dialog-open');
   repoDetailController?.abort();
-  contributionsController?.abort();
   app.innerHTML = html;
 }
 
@@ -152,40 +145,6 @@ function renderCurrent(): void {
   );
   updateMeta(currentView);
   window.scrollTo(0, 0);
-  void loadContributions(currentView.handle);
-}
-
-async function loadContributions(handle: string): Promise<void> {
-  if (!hasContributionProxy) return;
-
-  const section = document.querySelector<HTMLElement>('#contributions');
-  const body = document.querySelector<HTMLElement>('#contributions-body');
-  if (!section || !body) return;
-
-  contributionsController?.abort();
-  contributionsController = new AbortController();
-
-  try {
-    const data = await fetchContributions(
-      handle,
-      contributionsController.signal,
-    );
-
-    if (currentHandle !== handle) return;
-
-    if (data.viewer?.toLowerCase() === handle.toLowerCase()) {
-      section.hidden = true;
-      body.innerHTML = '';
-      return;
-    }
-
-    body.innerHTML = renderContributions(data);
-    section.hidden = false;
-  } catch (error) {
-    if (isAbortError(error)) return;
-    section.hidden = true;
-    body.innerHTML = '';
-  }
 }
 
 function updateMeta(view: ProfileView): void {

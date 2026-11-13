@@ -35,8 +35,6 @@ jobs:
 
       - name: Build
         run: npm run build
-        env:
-          VITE_CONTRIB_PROXY_URL: ${{ vars.VITE_CONTRIB_PROXY_URL }}
 
       - name: Configure Pages
         uses: actions/configure-pages@v5

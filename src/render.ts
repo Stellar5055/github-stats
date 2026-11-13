@@ -45,7 +45,6 @@ export function renderProfile(
         ${renderDetails(view)}
       </div>
       ${renderActivity(view)}
-      ${renderContributionsPlaceholder()}
       ${renderFinePrint(view)}
       <div class="profile-actions no-print">
         <button type="button" class="button button-secondary" data-action="print">Print this page</button>
@@ -396,16 +395,6 @@ function renderActivityChart(activity: ActivityView): string {
   const label = `Activity over the last 90 days: ${pluralize(activity.totalEvents, 'public event')} across ${pluralize(activity.activeDays, 'active day')}.`;
 
   return `<svg class="activity-chart" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" role="img" aria-label="${escapeHtml(label)}">${bars}</svg>`;
-}
-
-function renderContributionsPlaceholder(): string {
-  return `<section class="section contributions-section" id="contributions" aria-labelledby="contributions-title" hidden>
-    <div class="section-head">
-      <h2 id="contributions-title" class="section-title">Contributions</h2>
-      <span class="section-note">Last 12 months</span>
-    </div>
-    <div id="contributions-body"></div>
-  </section>`;
 }
 
 function renderFinePrint(view: ProfileView): string {
