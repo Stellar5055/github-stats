@@ -1,5 +1,10 @@
-import { fetchProfile, isGitHubApiError } from './api';
-import { clearCache, readCache, writeCache } from './cache';
+import { fetchProfile, fetchRepoDetails, isGitHubApiError } from './api';
+import { readCache, writeCache } from './cache';
+import {
+  fetchContributions,
+  hasContributionProxy,
+  renderContributions,
+} from './contributions';
 import { deriveProfile } from './derive';
 import { formatPulledAt, truncate } from './format';
 import { parseHandle } from './parse';
@@ -9,7 +14,17 @@ import {
   renderProfile,
   renderReposSection,
 } from './render';
-import type { AppError, ProfileView, SortKey } from './types';
+import {
+  renderRepoDetails,
+  renderRepoDetailsError,
+  renderRepoDetailsLoading,
+} from './repo-dialog';
+import type {
+  AppError,
+  ProfileView,
+  RepoDetailData,
+  SortKey,
+} from './types';
 
 const app = document.querySelector<HTMLDivElement>('#app');
 const boot = document.querySelector<HTMLDivElement>('#boot');
@@ -20,6 +35,9 @@ let currentHandle = '';
 let currentSort: SortKey = 'stars';
 let showAllRepos = false;
 let controller: AbortController | null = null;
+const repoDetailCache = new Map<string, RepoDetailData>();
+let repoDetailController: AbortController | null = null;
+let contributionsController: AbortController | null = null;
 
 function clearBoot(): void {
   document.documentElement.classList.remove('is-loading');
@@ -28,6 +46,13 @@ function clearBoot(): void {
 
 function setApp(html: string): void {
   if (!app) return;
+
+  const dialog = app.querySelector<HTMLDialogElement>('#repo-dialog');
+  if (dialog?.open) dialog.close();
+
+  document.documentElement.classList.remove('dialog-open');
+  repoDetailController?.abort();
+  contributionsController?.abort();
   app.innerHTML = html;
 }
 
@@ -48,7 +73,7 @@ function toAppError(error: unknown): AppError {
   };
 }
 
-async function load(raw: string): Promise<void> {
+async function load(raw: string, force = false): Promise<void> {
   const parsed = parseHandle(raw);
 
   if (!parsed.ok) {
@@ -69,7 +94,7 @@ async function load(raw: string): Promise<void> {
 
   const cached = readCache(handle);
 
-  if (cached && !cached.stale) {
+  if (cached && !cached.stale && !force) {
     currentView = deriveProfile(cached.data);
     clearBoot();
     renderCurrent();
@@ -127,6 +152,40 @@ function renderCurrent(): void {
   );
   updateMeta(currentView);
   window.scrollTo(0, 0);
+  void loadContributions(currentView.handle);
+}
+
+async function loadContributions(handle: string): Promise<void> {
+  if (!hasContributionProxy) return;
+
+  const section = document.querySelector<HTMLElement>('#contributions');
+  const body = document.querySelector<HTMLElement>('#contributions-body');
+  if (!section || !body) return;
+
+  contributionsController?.abort();
+  contributionsController = new AbortController();
+
+  try {
+    const data = await fetchContributions(
+      handle,
+      contributionsController.signal,
+    );
+
+    if (currentHandle !== handle) return;
+
+    if (data.viewer?.toLowerCase() === handle.toLowerCase()) {
+      section.hidden = true;
+      body.innerHTML = '';
+      return;
+    }
+
+    body.innerHTML = renderContributions(data);
+    section.hidden = false;
+  } catch (error) {
+    if (isAbortError(error)) return;
+    section.hidden = true;
+    body.innerHTML = '';
+  }
 }
 
 function updateMeta(view: ProfileView): void {
@@ -173,6 +232,72 @@ function rerenderRepos(focus: 'sort' | 'toggle'): void {
   }
 }
 
+function closeRepoDialog(): void {
+  document.querySelector<HTMLDialogElement>('#repo-dialog')?.close();
+}
+
+async function openRepoDetails(
+  owner: string,
+  repo: string,
+): Promise<void> {
+  const dialog = document.querySelector<HTMLDialogElement>('#repo-dialog');
+  const content = document.querySelector<HTMLDivElement>(
+    '#repo-dialog-content',
+  );
+  if (!dialog || !content) return;
+
+  const key = `${owner}/${repo}`.toLowerCase();
+  const cached = repoDetailCache.get(key);
+
+  const showDialog = (): void => {
+    if (dialog.open) return;
+
+    dialog.showModal();
+    document.documentElement.classList.add('dialog-open');
+    dialog.addEventListener(
+      'close',
+      () => {
+        document.documentElement.classList.remove('dialog-open');
+        repoDetailController?.abort();
+      },
+      { once: true },
+    );
+  };
+
+  if (cached) {
+    content.innerHTML = renderRepoDetails(cached);
+    showDialog();
+    return;
+  }
+
+  content.innerHTML = renderRepoDetailsLoading(owner, repo);
+  showDialog();
+
+  repoDetailController?.abort();
+  repoDetailController = new AbortController();
+
+  try {
+    const details = await fetchRepoDetails(
+      owner,
+      repo,
+      repoDetailController.signal,
+    );
+
+    repoDetailCache.set(key, details);
+    if (!content.isConnected) return;
+    content.innerHTML = renderRepoDetails(details);
+  } catch (error) {
+    if (isAbortError(error) || !content.isConnected) return;
+
+    const message =
+      isGitHubApiError(error) && error.kind === 'rate-limit'
+        ? 'GitHub’s API limit is used up. Try again later.'
+        : 'Could not load repository details.';
+
+    content.innerHTML = renderRepoDetailsError(owner, repo, message);
+  }
+}
+
 async function copyLink(button: HTMLElement): Promise<void> {
   try {
     await navigator.clipboard.writeText(window.location.href);
@@ -191,6 +316,11 @@ async function copyLink(button: HTMLElement): Promise<void> {
 document.addEventListener('click', (event) => {
   const target = event.target;
   if (!(target instanceof Element)) return;
+
+  if (target instanceof HTMLDialogElement && target.id === 'repo-dialog') {
+    target.close();
+    return;
+  }
 
   const sortButton = target.closest<HTMLButtonElement>('[data-sort]');
   if (sortButton) {
@@ -216,8 +346,13 @@ document.addEventListener('click', (event) => {
     void copyLink(actionTarget);
   } else if (action === 'refresh') {
     if (!currentHandle) return;
-    clearCache(currentHandle);
-    void load(currentHandle);
+    void load(currentHandle, true);
+  } else if (action === 'repo-details') {
+    const owner = actionTarget.dataset.owner;
+    const repo = actionTarget.dataset.repo;
+    if (owner && repo) void openRepoDetails(owner, repo);
+  } else if (action === 'close-repo') {
+    closeRepoDialog();
   } else if (action === 'retry') {
     void load(currentHandle);
   }

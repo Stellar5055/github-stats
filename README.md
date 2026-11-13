@@ -18,6 +18,7 @@ Working name: **GitHub Stats**. Built as a small project for Hack Club Crossroad
 - Lists repositories with descriptions, languages, stars, and last push. Sort by stars, recency, or name.
 - Adds details: join date, location, company, website, most starred repo, top license, median repo age, description rate, and public gists.
 - Draws 90 days of public activity and an event mix.
+- Optionally adds a real 12-month contribution calendar through a small token-backed proxy. See [server/README.md](server/README.md).
 - Includes a print stylesheet for a clean printed record (usually one or two pages).
 - Caches successful lookups locally for 15 minutes and falls back to the last saved profile when GitHub is unreachable.
 
@@ -64,6 +65,16 @@ tests/                  pure-function tests with fixtures
 - Unauthenticated GitHub API requests are limited to 60/hour per IP. Successful lookups are cached for 15 minutes.
 - No accounts, backend, database, or API tokens.
 - Not affiliated with GitHub.
+
+## Optional contribution proxy
+
+The static site works without a backend. To show a real contribution calendar, deploy the small proxy in `server/` and set a GitHub Actions repository variable:
+
+```text
+VITE_CONTRIB_PROXY_URL=https://your-proxy.example.com
+```
+
+Then re-run the Pages workflow. Without it, the contributions section stays hidden. The proxy holds a GitHub token server-side and only exposes its fixed contribution query; never commit the token. See [server/README.md](server/README.md) for local and Render setup.
 
 ## Deploy
 

@@ -1,10 +1,14 @@
 import type {
   ApiErrorKind,
   AppError,
+  GitHubCommitSummary,
   GitHubEvent,
+  GitHubReleaseSummary,
   GitHubRepo,
+  GitHubRepoDetail,
   GitHubUser,
   ProfileData,
+  RepoDetailData,
 } from './types';
 
 const API_ROOT = 'https://api.github.com';
@@ -118,6 +122,55 @@ async function paginate<T>(
   }
 
   return { items, truncated: true };
+}
+
+async function optional<T>(
+  promise: Promise<T>,
+  fallback: T,
+): Promise<T> {
+  try {
+    return await promise;
+  } catch (error) {
+    if (isAbortError(error)) throw error;
+    return fallback;
+  }
+}
+
+export async function fetchRepoDetails(
+  owner: string,
+  repo: string,
+  signal?: AbortSignal,
+): Promise<RepoDetailData> {
+  const path = `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}`;
+
+  const [repoData, languages, commits, release] = await Promise.all([
+    getJson<GitHubRepoDetail>(`${API_ROOT}${path}`, signal),
+    optional(
+      getJson<Record<string, number>>(`${API_ROOT}${path}/languages`, signal),
+      {},
+    ),
+    optional(
+      getJson<GitHubCommitSummary[]>(
+        `${API_ROOT}${path}/commits?per_page=1`,
+        signal,
+      ),
+      [],
+    ),
+    optional(
+      getJson<GitHubReleaseSummary[]>(
+        `${API_ROOT}${path}/releases?per_page=1`,
+        signal,
+      ),
+      [],
+    ),
+  ]);
+
+  return {
+    repo: repoData,
+    languages,
+    lastCommit: commits[0] ?? null,
+    release: release[0] ?? null,
+  };
 }
 
 export async function fetchProfile(

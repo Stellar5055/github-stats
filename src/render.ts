@@ -11,6 +11,7 @@ import {
   pluralize,
 } from './format';
 import { sortRepos } from './derive';
+import { renderRepoDialogShell } from './repo-dialog';
 import type {
   ActivityView,
   AppError,
@@ -34,6 +35,7 @@ export function renderProfile(
   return `<div class="page">
     ${siteHeader('profile')}
     <main class="profile shell">
+      ${renderPrintMasthead(view)}
       ${renderIdentity(view)}
       ${renderStats(view.stats)}
       ${renderNotices(view)}
@@ -43,6 +45,7 @@ export function renderProfile(
         ${renderDetails(view)}
       </div>
       ${renderActivity(view)}
+      ${renderContributionsPlaceholder()}
       ${renderFinePrint(view)}
       <div class="profile-actions no-print">
         <button type="button" class="button button-secondary" data-action="print">Print this page</button>
@@ -51,7 +54,21 @@ export function renderProfile(
         <a class="button button-quiet" href="./">Search another</a>
       </div>
     </main>
+    ${renderRepoDialogShell()}
     ${siteFooter()}
+  </div>`;
+}
+
+function renderPrintMasthead(view: ProfileView): string {
+  return `<div class="print-only print-masthead">
+    <div>
+      <p class="print-brand">GitHub Stats.</p>
+      <p class="print-masthead-label">Public profile record</p>
+    </div>
+    <div class="print-masthead-meta">
+      <span>github.com/${escapeHtml(view.handle)}</span>
+      <span>Fetched ${escapeHtml(formatPulledAt(view.fetchedAt))}</span>
+    </div>
   </div>`;
 }
 
@@ -91,8 +108,7 @@ export function renderReposSection(
   ui: RepoUiState,
 ): string {
   const sorted = sortRepos(view.repos, ui.sort);
-  const visible = ui.showAll ? sorted : sorted.slice(0, 8);
-  const rows = visible.map(renderRepo).join('');
+  const rows = sorted.map((repo) => renderRepo(repo, view.handle)).join('');
   const showToggle =
     view.repos.length > 8
       ? `<button type="button" class="show-all no-print" data-action="toggle-repos" aria-expanded="${ui.showAll}" aria-controls="repo-list">${ui.showAll ? 'Show fewer' : `Show all ${formatNumber(view.repos.length)}`}</button>`
@@ -105,7 +121,7 @@ export function renderReposSection(
         <span>Stars</span>
         <span>Pushed</span>
       </div>
-      <ol class="repo-list" id="repo-list">${rows}</ol>
+      <ol class="repo-list${ui.showAll ? '' : ' is-collapsed'}" id="repo-list">${rows}</ol>
       ${showToggle}`
     : `<div class="empty-state">
         <p>${view.forkCount > 0 ? 'No original repositories. Only forks were found.' : 'No public repositories yet.'}</p>
@@ -116,6 +132,7 @@ export function renderReposSection(
       <h2 id="repos-title" class="section-title">Repositories</h2>
       <span class="section-note">${escapeHtml(formatNumber(view.analyzedRepoCount))}</span>
     </div>
+    ${view.repos.length > 10 ? `<p class="print-only print-note">First 10 of ${escapeHtml(formatNumber(view.repos.length))} repositories shown in print.</p>` : ''}
     <div class="repo-toolbar no-print">
       <span class="toolbar-label">Sort</span>
       <div class="sort-buttons" role="group" aria-label="Sort repositories">
@@ -172,7 +189,6 @@ function renderIdentity(view: ProfileView): string {
       ${view.isOrg ? '<p class="profile-kind">Organization</p>' : ''}
       <h1 id="profile-name" class="profile-name">${escapeHtml(view.displayName)}</h1>
       <p class="profile-handle">@${escapeHtml(view.handle)}</p>
-      <p class="print-only">github.com/${escapeHtml(view.handle)}</p>
       ${view.bio ? `<p class="profile-bio">${escapeHtml(view.bio)}</p>` : ''}
       <div class="profile-meta">${meta.join('')}</div>
     </div>
@@ -246,7 +262,7 @@ function languageSummary(languages: LanguageSlice[]): string {
     .join(', ')}`;
 }
 
-function renderRepo(repo: RepoItem): string {
+function renderRepo(repo: RepoItem, owner: string): string {
   const description = repo.description
     ? `<p class="repo-description">${escapeHtml(repo.description)}</p>`
     : '';
@@ -266,6 +282,7 @@ function renderRepo(repo: RepoItem): string {
       <div class="repo-title-row">
         <a class="repo-name" href="${escapeHtml(repo.url)}" target="_blank" rel="noreferrer">${escapeHtml(repo.name)}</a>
         ${archived}
+        <button type="button" class="repo-details no-print" data-action="repo-details" data-owner="${escapeHtml(owner)}" data-repo="${escapeHtml(repo.name)}" aria-haspopup="dialog" aria-controls="repo-dialog" aria-label="Details for ${escapeHtml(repo.name)}">Details</button>
       </div>
       ${description}
     </div>
@@ -379,6 +396,16 @@ function renderActivityChart(activity: ActivityView): string {
   const label = `Activity over the last 90 days: ${pluralize(activity.totalEvents, 'public event')} across ${pluralize(activity.activeDays, 'active day')}.`;
 
   return `<svg class="activity-chart" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" role="img" aria-label="${escapeHtml(label)}">${bars}</svg>`;
+}
+
+function renderContributionsPlaceholder(): string {
+  return `<section class="section contributions-section" id="contributions" aria-labelledby="contributions-title" hidden>
+    <div class="section-head">
+      <h2 id="contributions-title" class="section-title">Contributions</h2>
+      <span class="section-note">Last 12 months</span>
+    </div>
+    <div id="contributions-body"></div>
+  </section>`;
 }
 
 function renderFinePrint(view: ProfileView): string {

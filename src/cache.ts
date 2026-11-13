@@ -41,14 +41,6 @@ export function writeCache(data: ProfileData): void {
   }
 }
 
-export function clearCache(handle: string): void {
-  try {
-    localStorage.removeItem(PREFIX + handle.toLowerCase());
-  } catch {
-    // nothing
-  }
-}
-
 function prune(): void {
   const entries: { key: string; fetchedAt: number }[] = [];
 

@@ -45,6 +45,67 @@ export interface GitHubRepo {
   pushed_at: string | null;
 }
 
+export interface GitHubRepoDetail {
+  id: number;
+  name: string;
+  full_name: string;
+  html_url: string;
+  description: string | null;
+  fork: boolean;
+  archived: boolean;
+  homepage: string | null;
+  language: string | null;
+  stargazers_count: number;
+  forks_count: number;
+  open_issues_count: number;
+  license: GitHubLicense | null;
+  topics?: string[];
+  default_branch: string;
+  created_at: string;
+  updated_at: string;
+  pushed_at: string | null;
+}
+
+export interface GitHubCommitSummary {
+  sha: string;
+  html_url: string;
+  commit: {
+    message: string;
+    author: { name: string; date: string } | null;
+  };
+  author: { login: string; avatar_url: string } | null;
+}
+
+export interface GitHubReleaseSummary {
+  tag_name: string;
+  name: string | null;
+  html_url: string;
+  published_at: string | null;
+  prerelease: boolean;
+}
+
+export interface RepoDetailData {
+  repo: GitHubRepoDetail;
+  languages: Record<string, number>;
+  lastCommit: GitHubCommitSummary | null;
+  release: GitHubReleaseSummary | null;
+}
+
+export interface ContributionDay {
+  date: string;
+  count: number;
+}
+
+export interface ContributionWeek {
+  days: ContributionDay[];
+}
+
+export interface ContributionData {
+  total: number;
+  weeks: ContributionWeek[];
+  viewer?: string;
+}
+
 export interface GitHubEvent {
   id: string;
   type: string;
