@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <meta name="theme-color" content="#fafaf7" />
+    <title>How the numbers work — GitHub Stats</title>
+    <meta
+      name="description"
+      content="How GitHub Stats counts repositories, stars, languages, and public activity."
+    />
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="site-header">
+        <div class="shell header-inner">
+          <a class="wordmark" href="./">GitHub Stats<span class="wordmark-dot">.</span></a>
+          <a class="header-link" href="./">Back to search</a>
+        </div>
+      </header>
+
+      <main class="method-page shell">
+        <p class="mono-label">Method</p>
+        <h1 class="method-title">How the numbers work.</h1>
+        <p class="method-lede">
+          GitHub Stats reads public data from the GitHub REST API. No token,
+          no backend, no AI summary.
+        </p>
+
+        <section class="method-section">
+          <h2>What is counted</h2>
+          <ul>
+            <li>
+              <strong>Public repositories</strong> owned by the account. The
+              headline “Public repos” number matches GitHub and includes forks.
+            </li>
+            <li>
+              <strong>Stars and forks</strong> summed across original
+              (non-fork) repositories.
+            </li>
+            <li>
+              <strong>Languages</strong> by the primary language GitHub reports
+              for each original repository — by repository count, not lines of
+              code.
+            </li>
+            <li>
+              <strong>Median repository age</strong> from repository creation
+              dates.
+            </li>
+            <li>
+              <strong>Activity</strong> from public events in the last 90 days.
+            </li>
+          </ul>
+        </section>
+
+        <section class="method-section">
+          <h2>What is not counted</h2>
+          <ul>
+            <li>Private repositories and private contributions.</li>
+            <li>
+              Commits and issues in repositories the account does not own.
+            </li>
+            <li>
+              Follower lists, email addresses, or anything not already public
+              on the GitHub profile.
+            </li>
+            <li>
+              Forks in stars, language share, and repository totals. They are
+              counted separately in the fine print.
+            </li>
+          </ul>
+        </section>
+
+        <section class="method-section">
+          <h2>Limits</h2>
+          <ul>
+            <li>
+              Up to the <strong>300 most recently pushed public repositories</strong>
+              are analyzed.
+            </li>
+            <li>
+              Up to <strong>300 public events</strong> are used for the 90-day
+              activity chart.
+            </li>
+            <li>
+              Unauthenticated GitHub requests are limited to
+              <strong>60 per hour per IP</strong>.
+            </li>
+            <li>
+              Successful lookups are cached for 15 minutes. The fetched time is
+              shown on every profile.
+            </li>
+          </ul>
+        </section>
+
+        <section class="method-section">
+          <h2>Corrections</h2>
+          <p>
+            GitHub is the source of truth. If something looks wrong, check the
+            profile on GitHub first. This site is not affiliated with GitHub.
+          </p>
+        </section>
+
+        <p class="method-back"><a href="./">← Back to search</a></p>
+      </main>
+
+      <footer class="site-footer">
+        <div class="shell footer-inner">
+          <span>GitHub Stats</span>
+          <span>
+            Public data from the GitHub API. Not affiliated with GitHub.
+            <a class="footer-link" href="https://github.com/Stellar5055/github-stats" target="_blank" rel="noreferrer">Source <span aria-hidden="true">↗</span></a>
+          </span>
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>

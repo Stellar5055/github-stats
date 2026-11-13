@@ -474,6 +474,7 @@ export function siteFooter(): string {
       <span>GitHub Stats</span>
       <span>
         Public data from the GitHub API. Not affiliated with GitHub.
+        <a class="footer-link" href="./method.html">How it works</a>
         <a class="footer-link" href="https://github.com/Stellar5055/github-stats" target="_blank" rel="noreferrer">Source <span aria-hidden="true">↗</span></a>
       </span>
     </div>

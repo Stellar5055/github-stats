@@ -391,6 +391,80 @@ html.is-loading #boot {
   text-decoration: underline;
 }
 
+/* Method page */
+
+.method-page {
+  max-width: 760px;
+  padding-block: clamp(56px, 9vh, 96px) 80px;
+}
+
+.method-title {
+  margin: 12px 0 18px;
+  font-size: clamp(38px, 6vw, 56px);
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1.04;
+  text-wrap: balance;
+}
+
+.method-lede {
+  max-width: 62ch;
+  margin: 0 0 44px;
+  color: var(--muted);
+  font-size: 18px;
+}
+
+.method-section {
+  margin-top: 40px;
+  padding-top: 18px;
+  border-top: 1px solid var(--rule);
+}
+
+.method-section h2 {
+  margin: 0 0 14px;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.method-section ul {
+  margin: 0;
+  padding-left: 20px;
+  color: var(--muted);
+}
+
+.method-section li {
+  margin-bottom: 10px;
+  padding-left: 2px;
+}
+
+.method-section li:last-child {
+  margin-bottom: 0;
+}
+
+.method-section strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.method-back {
+  margin-top: 48px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 720px) {
+  .method-page {
+    padding-block: 48px 64px;
+  }
+
+  .method-lede {
+    font-size: 16px;
+  }
+}
+
 /* Profile */
 
 .profile {
