@@ -1,5 +1,11 @@
 # GitHub Stats
 
+[![CI](https://github.com/Stellar5055/github-stats/actions/workflows/ci.yml/badge.svg)](https://github.com/Stellar5055/github-stats/actions/workflows/ci.yml)
+[![Deploy](https://github.com/Stellar5055/github-stats/actions/workflows/deploy.yml/badge.svg)](https://github.com/Stellar5055/github-stats/actions/workflows/deploy.yml)
+
+**Live:** [stellar5055.github.io/github-stats](https://stellar5055.github.io/github-stats/)  
+**Repo:** [github.com/Stellar5055/github-stats](https://github.com/Stellar5055/github-stats)
+
 A small, printable GitHub profile stats page. Enter a handle or profile URL and get a clean single page with the profile, headline numbers, languages, repositories, and recent public activity.
 
 Working name: **GitHub Stats**. Built as a small project for Hack Club Crossroads.
