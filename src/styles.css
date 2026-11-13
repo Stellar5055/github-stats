@@ -3,14 +3,30 @@
 @import "@fontsource/ibm-plex-mono/latin-500.css";
 
 :root {
+  color-scheme: light;
   --bg: #fafaf7;
   --ink: #1b1b19;
+  --ink-hover: #000000;
+  --on-ink: #ffffff;
+  --surface: #ffffff;
+  --surface-hover: #f4f3ee;
   --muted: #66665f;
   --faint: #6f6f67;
   --rule: #e3e2da;
   --rule-strong: #c9c7bc;
   --accent: #b4441f;
-  --white: #ffffff;
+  --on-accent: #ffffff;
+  --accent-ring: rgba(180, 68, 31, 0.12);
+  --chart-bar: #c9c7bc;
+  --backdrop: rgba(27, 27, 25, 0.32);
+  --lang-0: var(--accent);
+  --lang-1: #35352f;
+  --lang-2: #5a5a52;
+  --lang-3: #7d7d73;
+  --lang-4: #a2a298;
+  --lang-5: #c4c3b8;
+  --lang-6: #dad8ce;
+  --lang-other: #e8e6dd;
   --font-sans: 'Libre Franklin Variable', 'Libre Franklin', -apple-system,
     BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas,
@@ -19,6 +35,33 @@
   --gutter: clamp(20px, 5vw, 40px);
   --radius: 4px;
   --transition: 160ms ease;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #181816;
+  --ink: #f1efe8;
+  --ink-hover: #ffffff;
+  --on-ink: #181816;
+  --surface: #1f1f1c;
+  --surface-hover: #23231f;
+  --muted: #a8a69d;
+  --faint: #8f8d83;
+  --rule: #2b2b27;
+  --rule-strong: #45443e;
+  --accent: #e07a52;
+  --on-accent: #181816;
+  --accent-ring: rgba(224, 122, 82, 0.22);
+  --chart-bar: #86847b;
+  --backdrop: rgba(0, 0, 0, 0.62);
+  --lang-0: var(--accent);
+  --lang-1: #e8e4d9;
+  --lang-2: #cbc7bc;
+  --lang-3: #b0ada2;
+  --lang-4: #959287;
+  --lang-5: #7d7b72;
+  --lang-6: #6f6d64;
+  --lang-other: #66645c;
 }
 
 *,
@@ -79,7 +122,7 @@ button {
 
 ::selection {
   background: var(--accent);
-  color: var(--white);
+  color: var(--on-accent);
 }
 
 :focus-visible {
@@ -165,6 +208,13 @@ p {
   color: var(--accent);
 }
 
+.header-actions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 10px;
+}
+
 .header-link,
 .header-note {
   font-family: var(--font-mono);
@@ -173,10 +223,37 @@ p {
   text-transform: uppercase;
   color: var(--muted);
   text-decoration: none;
+  white-space: nowrap;
 }
 
 .header-link:hover {
   color: var(--accent);
+}
+
+html:not(.js) .theme-toggle {
+  display: none;
+}
+
+.theme-toggle {
+  display: inline-flex;
+  min-width: 44px;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.theme-toggle:hover {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
 }
 
 /* Boot shell */
@@ -260,13 +337,13 @@ html.is-loading #boot {
   padding: 6px;
   border: 1px solid var(--rule-strong);
   border-radius: var(--radius);
-  background: var(--white);
+  background: var(--surface);
   transition: border-color var(--transition), box-shadow var(--transition);
 }
 
 .search-row:focus-within {
   border-color: var(--ink);
-  box-shadow: 0 0 0 3px rgba(180, 68, 31, 0.12);
+  box-shadow: 0 0 0 3px var(--accent-ring);
 }
 
 .search-input {
@@ -280,7 +357,7 @@ html.is-loading #boot {
 }
 
 .search-input::placeholder {
-  color: #74746c;
+  color: var(--faint);
 }
 
 /* Buttons */
@@ -304,12 +381,12 @@ html.is-loading #boot {
 
 .button-primary {
   background: var(--ink);
-  color: var(--white);
+  color: var(--on-ink);
 }
 
 .button-primary:hover {
-  background: #000;
-  color: var(--white);
+  background: var(--ink-hover);
+  color: var(--on-ink);
 }
 
 .button-secondary {
@@ -320,7 +397,7 @@ html.is-loading #boot {
 
 .button-secondary:hover {
   background: var(--ink);
-  color: var(--white);
+  color: var(--on-ink);
 }
 
 .button-quiet {
@@ -693,36 +770,36 @@ html.is-loading #boot {
 }
 
 .language-tone-0 {
-  background: var(--accent);
+  background: var(--lang-0);
 }
 
 .language-tone-1 {
-  background: #35352f;
+  background: var(--lang-1);
 }
 
 .language-tone-2 {
-  background: #5a5a52;
+  background: var(--lang-2);
 }
 
 .language-tone-3 {
-  background: #7d7d73;
+  background: var(--lang-3);
 }
 
 .language-tone-4 {
-  background: #a2a298;
+  background: var(--lang-4);
 }
 
 .language-tone-5 {
-  background: #c4c3b8;
+  background: var(--lang-5);
 }
 
 .language-tone-6 {
-  background: #dad8ce;
+  background: var(--lang-6);
 }
 
 .language-segment.is-other,
 .language-swatch.is-other {
-  background: #e8e6dd;
+  background: var(--lang-other);
 }
 
 .language-legend {
@@ -852,7 +929,7 @@ html.is-loading #boot {
 }
 
 .repo-item:hover {
-  background: #f4f3ee;
+  background: var(--surface-hover);
 }
 
 .repo-main {
@@ -894,7 +971,7 @@ html.is-loading #boot {
 }
 
 .repo-open:hover {
-  background: #f4f3ee;
+  background: var(--surface-hover);
   color: var(--accent);
 }
 
@@ -1041,7 +1118,7 @@ html.is-loading #boot {
 }
 
 .activity-bar {
-  fill: #c9c7bc;
+  fill: var(--chart-bar);
   transition: fill var(--transition);
 }
 
@@ -1288,7 +1365,7 @@ html.dialog-open {
 }
 
 .repo-dialog::backdrop {
-  background: rgba(27, 27, 25, 0.32);
+  background: var(--backdrop);
 }
 
 .repo-dialog-inner {
@@ -1654,6 +1731,10 @@ html.dialog-open {
 }
 
 @media (max-width: 560px) {
+  .header-note {
+    display: none;
+  }
+
   .repo-dialog-inner {
     padding: 24px;
   }
@@ -1707,15 +1788,25 @@ html.dialog-open {
     margin: 16mm;
   }
 
-  :root {
+  :root,
+  :root[data-theme='light'],
+  :root[data-theme='dark'] {
+    color-scheme: light;
     --bg: #fff;
     --ink: #000;
+    --ink-hover: #000;
+    --on-ink: #fff;
+    --surface: #fff;
+    --surface-hover: #fff;
     --muted: #333;
     --faint: #555;
     --rule: #ccc;
     --rule-strong: #999;
     --accent: #000;
-    --white: #fff;
+    --on-accent: #fff;
+    --accent-ring: transparent;
+    --chart-bar: #bbb;
+    --backdrop: transparent;
   }
 
   body {

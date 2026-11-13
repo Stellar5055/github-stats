@@ -3,8 +3,28 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="color-scheme" content="light" />
+    <meta name="color-scheme" content="light dark" />
     <meta name="theme-color" content="#fafaf7" />
+    <script>
+      (() => {
+        let stored = null;
+        try {
+          stored = localStorage.getItem('ghs:theme');
+        } catch {}
+        const prefersDark =
+          stored !== 'light' &&
+          (stored === 'dark' ||
+            (window.matchMedia &&
+              window.matchMedia('(prefers-color-scheme: dark)').matches));
+        const theme = prefersDark ? 'dark' : 'light';
+        document.documentElement.dataset.theme = theme;
+        document.documentElement.classList.add('js');
+        const meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) {
+          meta.setAttribute('content', theme === 'dark' ? '#181816' : '#fafaf7');
+        }
+      })();
+    </script>
     <title>GitHub Stats</title>
     <meta
       name="description"
@@ -42,7 +62,10 @@
       <header class="site-header">
         <div class="shell header-inner">
           <a class="wordmark" href="./">GitHub Stats<span class="wordmark-dot">.</span></a>
-          <span class="header-note">Public data only</span>
+          <div class="header-actions">
+            <span class="header-note">Public data only</span>
+            <button type="button" class="theme-toggle no-print" data-theme-toggle aria-label="Switch to dark theme" title="Switch to dark theme">Dark</button>
+          </div>
         </div>
       </header>
 

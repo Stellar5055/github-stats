@@ -551,11 +551,14 @@ export function siteHeader(mode: 'landing' | 'profile'): string {
   return `<header class="site-header">
     <div class="shell header-inner">
       <a class="wordmark" href="./">GitHub Stats<span class="wordmark-dot">.</span></a>
-      ${
-        mode === 'profile'
-          ? '<a class="header-link no-print" href="./">New search</a>'
-          : '<span class="header-note">Public data only</span>'
-      }
+      <div class="header-actions">
+        ${
+          mode === 'profile'
+            ? '<a class="header-link no-print" href="./">New search</a>'
+            : '<span class="header-note">Public data only</span>'
+        }
+        <button type="button" class="theme-toggle no-print" data-theme-toggle aria-label="Switch to dark theme" title="Switch to dark theme">Dark</button>
+      </div>
     </div>
   </header>`;
 }

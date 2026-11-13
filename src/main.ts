@@ -17,6 +17,7 @@ import {
   renderRepoDetailsError,
   renderRepoDetailsLoading,
 } from './repo-dialog';
+import { initTheme, syncThemeButtons } from './theme';
 import type {
   AppError,
   ProfileView,
@@ -27,6 +28,8 @@ import type {
 const app = document.querySelector<HTMLDivElement>('#app');
 const boot = document.querySelector<HTMLDivElement>('#boot');
 const status = document.querySelector<HTMLDivElement>('#status');
+
+initTheme();
 
 let currentView: ProfileView | null = null;
 let currentHandle = '';
@@ -51,6 +54,7 @@ function setApp(html: string): void {
   document.documentElement.classList.remove('dialog-open');
   repoDetailController?.abort();
   app.innerHTML = html;
+  syncThemeButtons();
 }
 
 function announce(message: string): void {

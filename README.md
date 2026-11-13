@@ -18,7 +18,8 @@ Working name: **GitHub Stats**. Built as a small project for Hack Club Crossroad
 - Lists repositories with descriptions, languages, stars, and last push. Sort by stars, recency, or name.
 - Adds details: join date, location, company, website, most starred repo, top license, median repo age, description rate, and public gists.
 - Draws 30 or 90 days of public activity and an event mix.
-- Includes a print stylesheet for a clean printed record (usually one or two pages).
+- Follows the system light/dark preference and remembers a manual theme choice.
+- Includes a print stylesheet for a clean printed record (usually one or two pages). The printed page always uses the light palette.
 - Caches successful lookups locally for 15 minutes and falls back to the last saved profile when GitHub is unreachable.
 
 ## Stack
@@ -28,7 +29,7 @@ Working name: **GitHub Stats**. Built as a small project for Hack Club Crossroad
 - GitHub REST API (unauthenticated)
 - GitHub Pages via GitHub Actions
 
-The landing page is static HTML. The only JavaScript-driven view is `?u=<handle>`.
+The landing page and method page are static HTML, with a small theme script. The only JavaScript-driven data view is `?u=<handle>`.
 
 ## Commands
 
@@ -52,6 +53,8 @@ src/types.ts            API and view-model types
 src/derive.ts           raw API data -> stats, languages, details, activity
 src/format.ts           escaping, numbers, dates, relative time, URLs
 src/render.ts           profile, loading, error, section templates
+src/theme.ts            theme resolution, persistence, header toggle
+src/method.ts           theme boot for the static method page
 src/styles.css          tokens, landing, profile, responsive, print
 tests/                  pure-function tests with fixtures
 ```
