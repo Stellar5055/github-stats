@@ -1,6 +1,7 @@
 import {
   escapeHtml,
   formatDayLabel,
+  formatFullDate,
   formatMonthShort,
   formatMonthYear,
   formatNumber,
@@ -252,6 +253,9 @@ function renderRepo(repo: RepoItem): string {
   const pushed = repo.pushedAt
     ? escapeHtml(formatRelative(repo.pushedAt))
     : '—';
+  const pushedTitle = repo.pushedAt
+    ? escapeHtml(formatFullDate(repo.pushedAt))
+    : '';
   const archived = repo.archived
     ? '<span class="repo-flag">Archived</span>'
     : '';
@@ -267,7 +271,7 @@ function renderRepo(repo: RepoItem): string {
     <div class="repo-meta">
       <span class="repo-cell repo-language" data-label="Language">${language}</span>
       <span class="repo-cell repo-stars" data-label="Stars">${escapeHtml(formatNumber(repo.stars))}</span>
-      <span class="repo-cell repo-updated" data-label="Pushed">${pushed}</span>
+      <span class="repo-cell repo-updated" data-label="Pushed" title="${pushedTitle}">${pushed}</span>
     </div>
   </li>`;
 }
