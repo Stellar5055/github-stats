@@ -210,6 +210,12 @@ p {
   color: var(--accent);
 }
 
+.header-start {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .header-actions {
   display: flex;
   flex-shrink: 0;
@@ -217,24 +223,8 @@ p {
   gap: 10px;
 }
 
-.header-link,
-.header-note {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--muted);
-  white-space: nowrap;
-}
-
-.header-link {
-  text-decoration: underline;
-  text-decoration-color: currentColor;
-}
-
-.header-link:hover {
-  color: var(--accent);
-  text-decoration-color: currentColor;
+.header-search.utility-button {
+  min-height: 44px;
 }
 
 html:not(.js) .theme-toggle {
@@ -389,16 +379,6 @@ html.is-loading #boot {
 .button-secondary:hover {
   background: var(--ink);
   color: var(--on-ink);
-}
-
-.button-quiet {
-  padding-inline: 10px;
-  background: transparent;
-  color: var(--muted);
-}
-
-.button-quiet:hover {
-  color: var(--accent);
 }
 
 .utility-button {
@@ -1233,23 +1213,14 @@ html.is-loading #boot {
 }
 
 .fine-print p {
-  margin: 0 0 3px;
+  margin: 0;
 }
 
 .profile-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-top: 22px;
-}
-
-.updated-note {
-  align-self: center;
-  color: var(--faint);
-  font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 0.03em;
-  white-space: nowrap;
+  margin-top: 14px;
 }
 
 /* Empty, loading, error */
@@ -1767,10 +1738,6 @@ html.dialog-open {
     gap: 16px;
   }
 
-  .header-note {
-    display: none;
-  }
-
   .repo-dialog-inner {
     padding: 24px;
   }
@@ -1811,9 +1778,11 @@ html.dialog-open {
     align-items: flex-start;
     gap: 4px;
   }
+}
 
-  .profile-actions .button {
-    flex: 1 1 auto;
+@media (max-width: 380px) {
+  .header-search-prefix {
+    display: none;
   }
 }
 

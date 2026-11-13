@@ -8,7 +8,6 @@ import {
   formatPercent,
   formatPulledAt,
   formatRelative,
-  formatUpdated,
   pluralize,
 } from './format';
 import { sortRepos } from './derive';
@@ -38,7 +37,7 @@ export function renderProfile(
   ui: ProfileUiState,
 ): string {
   return `<div class="page">
-    ${siteHeader('profile')}
+    ${siteHeader()}
     <main class="profile shell">
       ${renderPrintMasthead(view)}
       ${renderIdentity(view)}
@@ -52,11 +51,9 @@ export function renderProfile(
       ${renderActivitySection(view, ui.activityWindow)}
       ${renderFinePrint(view)}
       <div class="profile-actions no-print">
-        <button type="button" class="button button-secondary" data-action="print">Print this page</button>
-        <button type="button" class="button button-quiet" data-action="refresh">Refresh</button>
-        <span class="updated-note">Updated ${escapeHtml(formatUpdated(view.fetchedAt))}</span>
-        <button type="button" class="button button-quiet" data-action="copy">Copy link</button>
-        <a class="button button-quiet" href="./">Search another</a>
+        <button type="button" class="utility-button" data-action="print" aria-label="Print this page">Print</button>
+        <button type="button" class="utility-button" data-action="refresh">Refresh</button>
+        <button type="button" class="utility-button" data-action="copy">Copy link</button>
       </div>
     </main>
     ${renderRepoDialogShell()}
@@ -79,7 +76,7 @@ function renderPrintMasthead(view: ProfileView): string {
 
 export function renderLoading(handle: string): string {
   return `<div class="page">
-    ${siteHeader('profile')}
+    ${siteHeader()}
     <main class="loading-page shell" aria-busy="true">
       <p class="mono-label">Looking up</p>
       <h1 class="loading-title">@${escapeHtml(handle)}</h1>
@@ -95,7 +92,7 @@ export function renderError(error: AppError, handle = ''): string {
   const canRetry = error.kind === 'network' || error.kind === 'http';
 
   return `<div class="page">
-    ${siteHeader('profile')}
+    ${siteHeader()}
     <main class="error-page shell">
       <p class="mono-label error-code">${escapeHtml(copy.code)}</p>
       <h1 class="error-title">${escapeHtml(copy.title)}</h1>
@@ -475,12 +472,11 @@ function renderFinePrint(view: ProfileView): string {
       : `${formatNumber(view.analyzedRepoCount)} of ${pluralize(view.repoTotal, 'public repo')}`;
   const forkNote =
     view.forkCount > 0
-      ? ` ${pluralize(view.forkCount, 'fork')} excluded.`
+      ? ` · ${pluralize(view.forkCount, 'fork')} excluded`
       : '';
 
   return `<section class="fine-print">
-    <p>Fetched ${escapeHtml(formatPulledAt(view.fetchedAt))} · ${escapeHtml(repoLabel)} analyzed.${escapeHtml(forkNote)}</p>
-    <p>Public data only. Not affiliated with GitHub.</p>
+    <p>Fetched ${escapeHtml(formatPulledAt(view.fetchedAt))} · ${escapeHtml(repoLabel)} analyzed${escapeHtml(forkNote)}.</p>
   </section>`;
 }
 
@@ -547,16 +543,14 @@ function renderSearchForm(value: string): string {
   </form>`;
 }
 
-export function siteHeader(mode: 'landing' | 'profile'): string {
+export function siteHeader(): string {
   return `<header class="site-header">
     <div class="shell header-inner">
-      <a class="wordmark" href="./">GitHub Stats<span class="wordmark-dot">.</span></a>
+      <div class="header-start">
+        <a class="wordmark" href="./">GitHub Stats<span class="wordmark-dot">.</span></a>
+        <a class="utility-button header-search no-print" href="./" aria-label="New search"><span class="header-search-prefix">New </span>Search</a>
+      </div>
       <div class="header-actions">
-        ${
-          mode === 'profile'
-            ? '<a class="header-link no-print" href="./">New search</a>'
-            : '<span class="header-note">Public data only</span>'
-        }
         <button type="button" class="utility-button theme-toggle no-print" data-theme-toggle aria-label="Switch to dark theme" title="Switch to dark theme">Dark</button>
       </div>
     </div>

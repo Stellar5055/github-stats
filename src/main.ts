@@ -1,7 +1,7 @@
 import { fetchProfile, fetchRepoDetails, isGitHubApiError } from './api';
 import { readCache, writeCache } from './cache';
 import { deriveProfile } from './derive';
-import { formatPulledAt, formatUpdated, truncate } from './format';
+import { formatPulledAt, truncate } from './format';
 import { parseHandle } from './parse';
 import {
   INITIAL_VISIBLE_REPOS,
@@ -399,14 +399,6 @@ document.addEventListener('click', (event) => {
     void load(currentHandle);
   }
 });
-
-window.setInterval(() => {
-  if (!currentView) return;
-  const note = document.querySelector<HTMLElement>('.updated-note');
-  if (note) {
-    note.textContent = `Updated ${formatUpdated(currentView.fetchedAt)}`;
-  }
-}, 60_000);
 
 const raw = new URLSearchParams(window.location.search).get('u');
 
