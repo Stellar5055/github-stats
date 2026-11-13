@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <meta name="theme-color" content="#fafaf7" />
+    <title>GitHub Stats</title>
+    <meta
+      name="description"
+      content="Look up a GitHub profile: public repositories, languages, stars, and the last 90 days."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="GitHub Stats" />
+    <meta
+      property="og:description"
+      content="Public repositories, languages, stars, and the last 90 days — on one page."
+    />
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <script>
+      if (new URLSearchParams(location.search).has('u')) {
+        document.documentElement.classList.add('is-loading');
+      }
+    </script>
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body>
+    <div id="boot" class="boot" aria-hidden="true">
+      <header class="site-header">
+        <div class="shell header-inner">
+          <span class="wordmark">GitHub Stats<span class="wordmark-dot">.</span></span>
+        </div>
+      </header>
+      <main class="boot-main shell">
+        <p class="mono-label">Looking up</p>
+        <p class="boot-title">Loading the profile…</p>
+        <div class="loading-line"></div>
+      </main>
+    </div>
+
+    <div id="app">
+      <header class="site-header">
+        <div class="shell header-inner">
+          <a class="wordmark" href="./">GitHub Stats<span class="wordmark-dot">.</span></a>
+          <span class="header-note">Public data only</span>
+        </div>
+      </header>
+
+      <main class="landing shell">
+        <div class="landing-inner">
+          <p class="mono-label landing-kicker">A GitHub profile reader</p>
+          <h1 class="landing-title">Look up a GitHub profile.</h1>
+          <p class="landing-sub">
+            Public repositories, languages, stars, and the last 90 days — on one page.
+          </p>
+
+          <form class="search" action="./" method="get">
+            <label class="search-label" for="handle">GitHub username or profile URL</label>
+            <div class="search-row">
+              <input
+                class="search-input"
+                id="handle"
+                name="u"
+                type="text"
+                placeholder="sindresorhus"
+                autocomplete="off"
+                autocapitalize="none"
+                spellcheck="false"
+                maxlength="200"
+                required
+              />
+              <button class="button button-primary" type="submit">Look up</button>
+            </div>
+          </form>
+
+          <p class="examples">
+            Try <a href="?u=sindresorhus">sindresorhus</a>,
+            <a href="?u=torvalds">torvalds</a>, or
+            <a href="?u=cassidoo">cassidoo</a>.
+          </p>
+
+          <p class="feature-line">
+            <span>Repositories</span>
+            <span>Languages</span>
+            <span>90-day activity</span>
+            <span>Print</span>
+          </p>
+        </div>
+      </main>
+
+      <footer class="site-footer">
+        <div class="shell footer-inner">
+          <span>GitHub Stats</span>
+          <span>Public data from the GitHub API. Not affiliated with GitHub.</span>
+        </div>
+      </footer>
+    </div>
+
+    <div id="status" class="sr-only" role="status" aria-live="polite"></div>
+
+    <noscript>
+      <p class="noscript">GitHub Stats needs JavaScript to load profile results.</p>
+    </noscript>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
