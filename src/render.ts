@@ -95,11 +95,10 @@ export function renderError(error: AppError, handle = ''): string {
     ${siteHeader()}
     <main class="error-page shell">
       <p class="mono-label error-code">${escapeHtml(copy.code)}</p>
-      <h1 class="error-title">${escapeHtml(copy.title)}</h1>
+      <h1 class="error-title" tabindex="-1">${escapeHtml(copy.title)}</h1>
       <p class="error-copy">${escapeHtml(copy.body)}</p>
       ${renderSearchForm(handle)}
       ${canRetry ? `<div class="error-actions"><button type="button" class="button button-secondary" data-action="retry">Try again</button></div>` : ''}
-      <p class="error-back"><a href="./">← Back to search</a></p>
     </main>
     ${siteFooter()}
   </div>`;
@@ -477,6 +476,7 @@ function renderFinePrint(view: ProfileView): string {
 
   return `<section class="fine-print">
     <p>Fetched ${escapeHtml(formatPulledAt(view.fetchedAt))} · ${escapeHtml(repoLabel)} analyzed${escapeHtml(forkNote)}.</p>
+    <p class="print-only">Public data only. Not affiliated with GitHub.</p>
   </section>`;
 }
 
@@ -490,7 +490,7 @@ function errorCopy(error: AppError): {
       return {
         code: '404 / Not found',
         title: 'No user under that name.',
-        body: 'Check the spelling, or paste the full GitHub profile URL.',
+        body: 'Check the spelling, or paste the full GitHub profile or repository URL.',
       };
     case 'rate-limit':
       return {
@@ -510,7 +510,7 @@ function errorCopy(error: AppError): {
       return {
         code: 'Invalid input',
         title: 'That doesn’t look like a profile.',
-        body: 'Use a GitHub username or a github.com profile link.',
+        body: 'Use a GitHub username, profile URL, or repository URL.',
       };
     default:
       return {
@@ -523,7 +523,7 @@ function errorCopy(error: AppError): {
 
 function renderSearchForm(value: string): string {
   return `<form class="search error-search" action="./" method="get">
-    <label class="search-label" for="handle">GitHub username or profile URL</label>
+    <label class="search-label" for="handle">GitHub username, profile, or repo URL</label>
     <div class="search-row">
       <input
         class="search-input"

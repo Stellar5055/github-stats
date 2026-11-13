@@ -123,7 +123,7 @@ async function load(
       activityWindow = defaultActivityWindow(currentView);
     }
     clearBoot();
-    renderCurrent(previousScroll);
+    renderCurrent(previousScroll, options.preserveUi);
     announce(`Profile loaded for ${handle}.`);
     return;
   }
@@ -139,7 +139,7 @@ async function load(
     if (!options.preserveUi) {
       activityWindow = defaultActivityWindow(currentView);
     }
-    renderCurrent(previousScroll);
+    renderCurrent(previousScroll, options.preserveUi);
     announce(`Profile loaded for ${handle}.`);
   } catch (error) {
     if (isAbortError(error)) return;
@@ -156,7 +156,7 @@ async function load(
       currentView.notices.push(
         `Showing the last saved profile from ${formatPulledAt(cached.data.fetchedAt)}.`,
       );
-      renderCurrent(previousScroll);
+      renderCurrent(previousScroll, options.preserveUi);
       announce('Showing a cached profile because GitHub could not be reached.');
       return;
     }
@@ -165,6 +165,9 @@ async function load(
     currentView = null;
     clearBoot();
     setApp(renderError(appError, handle));
+    if (options.preserveUi) {
+      document.querySelector<HTMLElement>('.error-title')?.focus();
+    }
     announce(
       appError.kind === 'not-found'
         ? `No GitHub user named ${handle}.`
@@ -173,7 +176,7 @@ async function load(
   }
 }
 
-function renderCurrent(scrollTop = 0): void {
+function renderCurrent(scrollTop = 0, focusRefresh = false): void {
   if (!currentView) return;
 
   setApp(
@@ -185,6 +188,12 @@ function renderCurrent(scrollTop = 0): void {
   );
   updateMeta(currentView);
   window.scrollTo(0, scrollTop);
+
+  if (focusRefresh) {
+    document
+      .querySelector<HTMLButtonElement>('[data-action="refresh"]')
+      ?.focus({ preventScroll: true });
+  }
 }
 
 function updateMeta(view: ProfileView): void {
@@ -324,11 +333,13 @@ async function copyLink(button: HTMLElement): Promise<void> {
   try {
     await navigator.clipboard.writeText(window.location.href);
     button.textContent = 'Copied';
+    announce('Link copied.');
     window.setTimeout(() => {
       button.textContent = 'Copy link';
     }, 1500);
   } catch {
     button.textContent = 'Copy failed';
+    announce('Could not copy link.');
     window.setTimeout(() => {
       button.textContent = 'Copy link';
     }, 1500);

@@ -223,17 +223,12 @@ p {
   gap: 10px;
 }
 
-.header-search.utility-button {
-  min-height: 44px;
-}
-
 html:not(.js) .theme-toggle {
   display: none;
 }
 
 .theme-toggle.utility-button {
   min-width: 56px;
-  min-height: 44px;
   padding-inline: 8px;
 }
 
@@ -383,7 +378,7 @@ html.is-loading #boot {
 
 .utility-button {
   display: inline-flex;
-  min-height: 36px;
+  min-height: 44px;
   align-items: center;
   justify-content: center;
   gap: 6px;
@@ -475,7 +470,6 @@ html.is-loading #boot {
 }
 
 .method-back-top {
-  min-height: 44px;
   margin-bottom: 28px;
 }
 
@@ -1324,14 +1318,6 @@ html.is-loading #boot {
   margin-top: 16px;
 }
 
-.error-back {
-  margin-top: 24px;
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
 .noscript {
   max-width: 640px;
   margin: 32px auto;
@@ -1376,8 +1362,8 @@ html.dialog-open {
   top: 12px;
   right: 12px;
   display: inline-flex;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   align-items: center;
   justify-content: center;
   padding: 0;

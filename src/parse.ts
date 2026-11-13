@@ -61,10 +61,14 @@ function failure(reason: string): ParseFailure {
 
 export function parseHandle(raw: string): ParseResult {
   let value = raw.trim();
-  if (!value) return failure('Enter a GitHub username or profile URL.');
+  if (!value) {
+    return failure('Enter a GitHub username, profile URL, or repository URL.');
+  }
 
   if (value.startsWith('@')) value = value.slice(1).trim();
-  if (!value) return failure('Enter a GitHub username or profile URL.');
+  if (!value) {
+    return failure('Enter a GitHub username, profile URL, or repository URL.');
+  }
 
   let candidate = '';
 
