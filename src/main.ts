@@ -111,6 +111,7 @@ async function load(
     currentUrl.searchParams.set('u', handle);
     window.history.replaceState(null, '', currentUrl);
   }
+  setCanonical(currentUrl.toString());
 
   controller?.abort();
   controller = new AbortController();
@@ -207,6 +208,15 @@ function updateMeta(view: ProfileView): void {
   setMeta('name', 'description', description);
   setMeta('property', 'og:title', title);
   setMeta('property', 'og:description', description);
+  setMeta('name', 'twitter:title', title);
+  setMeta('name', 'twitter:description', description);
+}
+
+function setCanonical(url: string): void {
+  document
+    .querySelector<HTMLLinkElement>('link[rel="canonical"]')
+    ?.setAttribute('href', url);
+  setMeta('property', 'og:url', url);
 }
 
 function setMeta(
