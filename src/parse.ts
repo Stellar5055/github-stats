@@ -83,12 +83,12 @@ export function parseHandle(raw: string): ParseResult {
     try {
       url = new URL(withProtocol);
     } catch {
-      return failure('That doesn’t look like a GitHub profile link.');
+      return failure('That doesn’t look like a GitHub username or link.');
     }
 
     const host = url.hostname.toLowerCase();
     if (host !== 'github.com' && host !== 'www.github.com') {
-      return failure('Use a GitHub profile link.');
+      return failure('Use a GitHub profile or repository URL.');
     }
 
     const segments = url.pathname.split('/').filter(Boolean);
@@ -100,14 +100,16 @@ export function parseHandle(raw: string): ParseResult {
     candidate = first ?? '';
 
     if (candidate.includes('.')) {
-      return failure('Use a GitHub profile link.');
+      return failure('Use a GitHub profile or repository URL.');
     }
   }
 
   candidate = candidate.trim();
-  if (!candidate) return failure('Add a username to the GitHub link.');
+  if (!candidate) {
+    return failure('Add a username or repository to the GitHub URL.');
+  }
   if (RESERVED.has(candidate.toLowerCase())) {
-    return failure('That GitHub path isn’t a profile.');
+    return failure('That GitHub path isn’t a profile or repository.');
   }
   if (!USERNAME_RE.test(candidate)) {
     return failure('That doesn’t look like a GitHub username.');

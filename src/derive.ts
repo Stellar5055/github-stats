@@ -1,6 +1,5 @@
 import {
   formatDateKey,
-  formatFullDate,
   formatNumber,
   formatPercent,
   formatRelative,
@@ -194,16 +193,8 @@ function buildDetails(
   now: number,
 ): Detail[] {
   const details: Detail[] = [];
-  const joined = Date.parse(data.user.created_at);
-
-  if (Number.isFinite(joined)) {
-    details.push({
-      label: 'Joined',
-      value: formatFullDate(data.user.created_at),
-    });
-  }
-
   const latestEvent = data.events[0]?.created_at;
+
   if (latestEvent) {
     details.push({
       label: 'Last public activity',
@@ -211,50 +202,7 @@ function buildDetails(
     });
   }
 
-  const location = clean(data.user.location);
-  if (location) {
-    details.push({ label: 'Location', value: location });
-  }
-
-  const company = clean(data.user.company);
-  if (company) {
-    const companyHandle = company.startsWith('@')
-      ? company.slice(1)
-      : null;
-
-    details.push({
-      label: 'Company',
-      value: company,
-      href: companyHandle
-        ? `https://github.com/${companyHandle}`
-        : undefined,
-    });
-  }
-
-  const website = normalizeWebsite(data.user.blog);
-  if (website) {
-    details.push({
-      label: 'Website',
-      value: website.label,
-      href: website.href,
-    });
-  }
-
   if (repos.length > 0) {
-    const topRepo = [...repos].sort(
-      (a, b) =>
-        b.stargazers_count - a.stargazers_count ||
-        a.name.localeCompare(b.name),
-    )[0];
-
-    if (topRepo && topRepo.stargazers_count > 0) {
-      details.push({
-        label: 'Most starred',
-        value: `${topRepo.name} · ${pluralize(topRepo.stargazers_count, 'star')}`,
-        href: topRepo.html_url,
-      });
-    }
-
     const licenses = countLicenses(repos);
     const topLicense = [...licenses.entries()].sort(
       (a, b) => b[1] - a[1] || a[0].localeCompare(b[0]),
@@ -415,7 +363,6 @@ export function deriveProfile(
       key: 'languages',
       label: 'Languages',
       value: formatNumber(languageCounts.size),
-      hint: partialHint,
     },
     {
       key: 'years',
@@ -427,14 +374,8 @@ export function deriveProfile(
   const notices: string[] = [];
 
   if (data.reposTruncated) {
-    notices.push('Showing the 300 most recently pushed public repositories.');
-  }
-  if (data.eventsTruncated) {
-    notices.push('Activity is based on the 300 most recent public events.');
-  }
-  if (nonForkRepos.length === 0 && forkCount > 0) {
     notices.push(
-      'Only forked repositories were found; forks are excluded from totals.',
+      'Analysis is limited to the 300 most recently pushed public repositories.',
     );
   }
 

@@ -92,9 +92,8 @@ export function renderError(error: AppError, handle = ''): string {
   const canRetry = error.kind === 'network' || error.kind === 'http';
 
   return `<div class="page">
-    ${siteHeader()}
+    ${siteHeader(false)}
     <main class="error-page shell">
-      <p class="mono-label error-code">${escapeHtml(copy.code)}</p>
       <h1 class="error-title" tabindex="-1">${escapeHtml(copy.title)}</h1>
       <p class="error-copy">${escapeHtml(copy.body)}</p>
       ${renderSearchForm(handle)}
@@ -165,7 +164,7 @@ export function renderReposSection(
         </div>
         <ol class="repo-list${collapsed ? ' is-collapsed' : ''}" id="repo-list">${rows}</ol>
         ${showMore}`
-      : `<p class="empty-line">${view.forkCount > 0 ? 'No original repositories. Only forks were found.' : 'No public repositories yet.'}</p>`;
+      : `<p class="empty-line">${view.forkCount > 0 ? 'No original repositories. Forks are excluded.' : 'No public repositories yet.'}</p>`;
 
   return `<section class="section repos-section" id="repos" aria-labelledby="repos-title">
     <div class="section-head">
@@ -471,7 +470,7 @@ function renderFinePrint(view: ProfileView): string {
       : `${formatNumber(view.analyzedRepoCount)} of ${pluralize(view.repoTotal, 'public repo')}`;
   const forkNote =
     view.forkCount > 0
-      ? ` · ${pluralize(view.forkCount, 'fork')} excluded`
+      ? ` · ${pluralize(view.forkCount, 'forked repo')} excluded`
       : '';
 
   return `<section class="fine-print">
@@ -481,20 +480,17 @@ function renderFinePrint(view: ProfileView): string {
 }
 
 function errorCopy(error: AppError): {
-  code: string;
   title: string;
   body: string;
 } {
   switch (error.kind) {
     case 'not-found':
       return {
-        code: '404 / Not found',
         title: 'No user under that name.',
         body: 'Check the spelling, or paste the full GitHub profile or repository URL.',
       };
     case 'rate-limit':
       return {
-        code: '403 / Rate limit',
         title: 'GitHub’s API limit is used up.',
         body: error.resetAt
           ? `Try again after ${formatPulledAt(error.resetAt)}.`
@@ -502,19 +498,16 @@ function errorCopy(error: AppError): {
       };
     case 'network':
       return {
-        code: 'Network',
         title: 'Couldn’t reach GitHub.',
         body: 'Check your connection and try again.',
       };
     case 'invalid':
       return {
-        code: 'Invalid input',
-        title: 'That doesn’t look like a profile.',
+        title: 'That doesn’t look like a GitHub username or link.',
         body: 'Use a GitHub username, profile URL, or repository URL.',
       };
     default:
       return {
-        code: 'GitHub error',
         title: 'GitHub returned an error.',
         body: 'Try again in a moment.',
       };
@@ -523,7 +516,7 @@ function errorCopy(error: AppError): {
 
 function renderSearchForm(value: string): string {
   return `<form class="search error-search" action="./" method="get">
-    <label class="search-label" for="handle">GitHub username, profile, or repo URL</label>
+    <label class="sr-only" for="handle">GitHub username or URL</label>
     <div class="search-row">
       <input
         class="search-input"
@@ -543,12 +536,16 @@ function renderSearchForm(value: string): string {
   </form>`;
 }
 
-export function siteHeader(): string {
+export function siteHeader(showSearch = true): string {
+  const searchLink = showSearch
+    ? '<a class="utility-button header-search no-print" href="./" aria-label="New search"><span class="header-search-prefix">New </span>Search</a>'
+    : '';
+
   return `<header class="site-header">
     <div class="shell header-inner">
       <div class="header-start">
         <a class="wordmark" href="./">GitHub Stats<span class="wordmark-dot">.</span></a>
-        <a class="utility-button header-search no-print" href="./" aria-label="New search"><span class="header-search-prefix">New </span>Search</a>
+        ${searchLink}
       </div>
       <div class="header-actions">
         <button type="button" class="utility-button theme-toggle no-print" data-theme-toggle aria-label="Switch to dark theme" title="Switch to dark theme">Dark</button>
@@ -560,14 +557,11 @@ export function siteHeader(): string {
 export function siteFooter(): string {
   return `<footer class="site-footer">
     <div class="shell footer-inner">
-      <span>GitHub Stats</span>
-      <div class="footer-meta">
-        <span>Public data from the GitHub API. Not affiliated with GitHub.</span>
-        <span class="footer-actions">
-          <a class="utility-button" href="./method.html">How it works</a>
-          <a class="utility-button" href="https://github.com/Stellar5055/github-stats" target="_blank" rel="noreferrer">View source <span aria-hidden="true">↗</span></a>
-        </span>
-      </div>
+      <span>Public data. Not affiliated with GitHub.</span>
+      <span class="footer-actions">
+        <a class="utility-button" href="./method.html">How it works</a>
+        <a class="utility-button" href="https://github.com/Stellar5055/github-stats" target="_blank" rel="noreferrer">View source <span aria-hidden="true">↗</span></a>
+      </span>
     </div>
   </footer>`;
 }

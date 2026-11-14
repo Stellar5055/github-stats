@@ -88,12 +88,11 @@
       </header>
 
       <main class="method-page shell">
-        <a class="utility-button method-back-top no-print" href="./"><span aria-hidden="true">←</span> Back to search</a>
-        <p class="mono-label">Method</p>
+        <p class="method-back method-back-top no-print"><a href="./"><span aria-hidden="true">←</span> Back to search</a></p>
         <h1 class="method-title">How the numbers work.</h1>
         <p class="method-lede">
-          GitHub Stats reads public data from the GitHub REST API. No token,
-          no backend, no AI summary.
+          GitHub Stats reads public data from the GitHub REST API. No account,
+          no backend.
         </p>
 
         <section class="method-section">
@@ -104,8 +103,8 @@
               headline “Public repos” number matches GitHub and includes forks.
             </li>
             <li>
-              <strong>Stars and forks</strong> summed across original
-              (non-fork) repositories.
+              <strong>Stars</strong> summed across original (non-fork)
+              repositories.
             </li>
             <li>
               <strong>Languages</strong> by the primary language GitHub reports
@@ -113,12 +112,12 @@
               code.
             </li>
             <li>
-              <strong>Median repository age</strong> from repository creation
-              dates.
+              <strong>Median repository age</strong> from creation dates of
+              original repositories.
             </li>
             <li>
               <strong>Activity</strong> from public events in the last 30 or 90
-              days.
+              days, including contributions to other repositories.
             </li>
           </ul>
         </section>
@@ -128,15 +127,14 @@
           <ul>
             <li>Private repositories and private contributions.</li>
             <li>
-              Commits and issues in repositories the account does not own.
+              Full commit history or code changes. The activity chart counts
+              public events, not commits.
             </li>
+            <li>Follower lists and email addresses.</li>
             <li>
-              Follower lists, email addresses, or anything not already public
-              on the GitHub profile.
-            </li>
-            <li>
-              Forks in stars, language share, and repository totals. They are
-              counted separately in the fine print.
+              Forked repositories in star, language, and repo-age figures. The
+              headline repo count includes them; the fine print shows how many
+              were excluded.
             </li>
           </ul>
         </section>
@@ -163,26 +161,20 @@
           </ul>
         </section>
 
-        <section class="method-section">
-          <h2>Corrections</h2>
-          <p>
-            GitHub is the source of truth. If something looks wrong, check the
-            profile on GitHub first. This site is not affiliated with GitHub.
-          </p>
-        </section>
+        <p class="method-note">
+          GitHub is the source of truth. If something looks wrong, check the
+          profile on GitHub.
+        </p>
 
-        <p class="method-back"><a href="./">← Back to search</a></p>
+        <p class="method-back no-print"><a href="./"><span aria-hidden="true">←</span> Back to search</a></p>
       </main>
 
       <footer class="site-footer">
         <div class="shell footer-inner">
-          <span>GitHub Stats</span>
-          <div class="footer-meta">
-            <span>Public data from the GitHub API. Not affiliated with GitHub.</span>
-            <span class="footer-actions">
-              <a class="utility-button" href="https://github.com/Stellar5055/github-stats" target="_blank" rel="noreferrer">View source <span aria-hidden="true">↗</span></a>
-            </span>
-          </div>
+          <span>Public data. Not affiliated with GitHub.</span>
+          <span class="footer-actions">
+            <a class="utility-button" href="https://github.com/Stellar5055/github-stats" target="_blank" rel="noreferrer">View source <span aria-hidden="true">↗</span></a>
+          </span>
         </div>
       </footer>
     </div>

@@ -6,9 +6,9 @@
 **Live:** [stellar5055.github.io/github-stats](https://stellar5055.github.io/github-stats/)  
 **Repo:** [github.com/Stellar5055/github-stats](https://github.com/Stellar5055/github-stats)
 
-A small, printable GitHub profile stats page. Enter a handle, profile URL, or repository URL and get a clean single page with the profile, headline numbers, languages, repositories, and recent public activity.
+A small, printable GitHub profile stats page. Enter a handle, profile URL, or repository URL and get a single page with the profile, headline numbers, languages, repositories, and recent public activity.
 
-Working name: **GitHub Stats**. Built as a small project for Hack Club Crossroads.
+Built for Hack Club Crossroads.
 
 ## What it does
 
@@ -16,11 +16,10 @@ Working name: **GitHub Stats**. Built as a small project for Hack Club Crossroad
 - Shows public repos, stars, followers, following, languages, and account age.
 - Breaks down the language mix by primary language.
 - Lists repositories with descriptions, languages, stars, and last push. Sort by stars, recency, or name.
-- Adds details: join date, location, company, website, most starred repo, top license, median repo age, description rate, and public gists.
+- Adds a compact details panel: last public activity, top license, median repo age, description rate, and public gists.
 - Draws 30 or 90 days of public activity and an event mix.
 - Follows the system light/dark preference and remembers a manual theme choice.
-- Includes a 1200×630 social preview image for shared links.
-- Includes a print stylesheet for a clean printed record (usually one or two pages). The printed page always uses the light palette.
+- Includes a print stylesheet for a printed record (usually one or two pages). The printed page always uses the light palette.
 - Caches successful lookups locally for 15 minutes and falls back to the last saved profile when GitHub is unreachable.
 
 ## Stack
@@ -63,7 +62,7 @@ tests/                  pure-function tests with fixtures
 ## Data rules
 
 - Public GitHub data only.
-- Forks are excluded from totals and counted separately.
+- The headline repo count matches GitHub and includes forks. Stars, languages, and repo-age figures use original (non-fork) repositories; forked repos are counted separately.
 - Up to 300 repositories and 300 public events are analyzed. The page says when it is working from a capped set.
 - Unauthenticated GitHub API requests are limited to 60/hour per IP. Successful lookups are cached for 15 minutes.
 - No accounts, backend, database, or API tokens.

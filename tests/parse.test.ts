@@ -63,9 +63,9 @@ describe('parseHandle', () => {
   });
 
   it('rejects non-GitHub and reserved paths', () => {
-    expectFailure('https://gitlab.com/foo', 'GitHub profile link');
-    expectFailure('gitlab.com/foo', 'GitHub profile link');
-    expectFailure('https://example.com/foo', 'GitHub profile link');
+    expectFailure('https://gitlab.com/foo', 'GitHub profile or repository URL');
+    expectFailure('gitlab.com/foo', 'GitHub profile or repository URL');
+    expectFailure('https://example.com/foo', 'GitHub profile or repository URL');
     expectFailure('https://github.com/settings/profile', 'profile');
     expectFailure('https://github.com/features', 'profile');
     expectFailure('https://github.com/orgs', 'username');

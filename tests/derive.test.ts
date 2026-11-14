@@ -53,7 +53,7 @@ describe('deriveProfile', () => {
     );
   });
 
-  it('builds details only from available data', () => {
+  it('builds details without repeating identity fields', () => {
     const data = makeProfileData({
       user: makeUser({
         public_repos: 3,
@@ -99,19 +99,16 @@ describe('deriveProfile', () => {
     const view = deriveProfile(data, NOW);
     const labels = view.details.map((detail) => detail.label);
 
-    expect(labels).toEqual(
-      expect.arrayContaining([
-        'Joined',
-        'Location',
-        'Company',
-        'Website',
-        'Most starred',
-        'Top license',
-        'Median repo age',
-        'With a description',
-        'Public gists',
-      ]),
-    );
+    expect(labels).toEqual([
+      'Last public activity',
+      'Top license',
+      'Median repo age',
+      'With a description',
+      'Public gists',
+    ]);
+    expect(view.meta.location).toBe('Berlin');
+    expect(view.meta.company).toBe('@github');
+    expect(view.meta.website?.href).toBe('https://example.com/');
     expect(
       view.details.find((detail) => detail.label === 'Top license')?.value,
     ).toBe('MIT · 2 repos');
@@ -119,12 +116,6 @@ describe('deriveProfile', () => {
       view.details.find((detail) => detail.label === 'With a description')
         ?.value,
     ).toBe('67%');
-    expect(
-      view.details.find((detail) => detail.label === 'Website')?.href,
-    ).toBe('https://example.com/');
-    expect(
-      view.details.find((detail) => detail.label === 'Company')?.href,
-    ).toBe('https://github.com/github');
   });
 
   it('builds a 90-day activity window in UTC', () => {
@@ -187,13 +178,13 @@ describe('deriveProfile', () => {
     expect(view.repos).toEqual([]);
     expect(view.languages).toEqual([]);
     expect(view.stats.find((stat) => stat.key === 'stars')?.value).toBe('0');
-    expect(view.details.map((detail) => detail.label)).toEqual(['Joined']);
+    expect(view.details).toEqual([]);
     expect(view.activity.totalEvents).toBe(0);
     expect(view.activity.busiestDay).toBeNull();
     expect(view.activity.mix).toEqual([]);
   });
 
-  it('notes when only forked repositories exist', () => {
+  it('handles a profile with only forked repositories', () => {
     const data = makeProfileData({
       user: makeUser({ public_repos: 2 }),
       repos: [
@@ -206,7 +197,7 @@ describe('deriveProfile', () => {
 
     expect(view.analyzedRepoCount).toBe(0);
     expect(view.forkCount).toBe(2);
-    expect(view.notices.join(' ')).toContain('forked');
+    expect(view.notices).toEqual([]);
   });
 
   it('adds truncation notices', () => {
@@ -218,13 +209,14 @@ describe('deriveProfile', () => {
 
     const view = deriveProfile(data, NOW);
 
+    expect(view.notices).toHaveLength(1);
     expect(view.notices.join(' ')).toContain('300');
     expect(
       view.stats.find((stat) => stat.key === 'stars')?.hint,
     ).toBe('1 analyzed');
     expect(
       view.stats.find((stat) => stat.key === 'languages')?.hint,
-    ).toBe('1 analyzed');
+    ).toBeUndefined();
   });
 
   it('sorts repositories by stars, recency, and name', () => {
