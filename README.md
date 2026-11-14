@@ -1,84 +1,40 @@
 # GitHub Stats
 
-[![CI](https://github.com/Stellar5055/github-stats/actions/workflows/ci.yml/badge.svg)](https://github.com/Stellar5055/github-stats/actions/workflows/ci.yml)
-[![Deploy](https://github.com/Stellar5055/github-stats/actions/workflows/deploy.yml/badge.svg)](https://github.com/Stellar5055/github-stats/actions/workflows/deploy.yml)
+**Get a quick insight on any public GitHub profile.**
 
-**Live:** [stellar5055.github.io/github-stats](https://stellar5055.github.io/github-stats/)  
-**Repo:** [github.com/Stellar5055/github-stats](https://github.com/Stellar5055/github-stats)
+![Example-Report](journal-images/image-2.png)
 
-A small, printable GitHub profile stats page. Enter a handle, profile URL, or repository URL and get a single page with the profile, headline numbers, languages, repositories, and recent public activity.
+[**TRY IT**](https://stellar5055.github.io/github-stats)
 
-Built for Hack Club Crossroads.
+## What It Does
 
-## What it does
+Search for a username or paste a profile URL or repository URL. You get the profile, the important numbers, languages, repositories and recent public activity on one page. Print a report or save it as a PDF. It has a dark mode and light mode
 
-- Look up any public GitHub user by handle, `@handle`, profile URL, or repository URL.
-- Shows public repos, stars, followers, following, languages, and account age.
-- Breaks down the language mix by primary language.
-- Lists repositories with descriptions, languages, stars, and last push. Sort by stars, recency, or name.
-- Adds a compact details panel: last public activity, top license, median repo age, description rate, and public gists.
-- Draws 30 or 90 days of public activity and an event mix.
-- Follows the system light/dark preference and remembers a manual theme choice.
-- Includes a print stylesheet for a printed record (usually one or two pages). The printed page always uses the light palette.
-- Caches successful lookups locally for 15 minutes and falls back to the last saved profile when GitHub is unreachable.
+It uses public GitHub data from their API, and can read up to 300 repositories and 300 public events. The only issue with this is that GitHub's API allows only 60 requests per hour per IP. 
 
-## Stack
+The [method page](https://stellar5055.github.io/github-stats/method.html) explains the counting rules if you want the exact details.
 
-- Vite + TypeScript, no UI framework
-- Hand-written CSS
-- GitHub REST API (unauthenticated)
-- GitHub Pages via GitHub Actions
+## How it’s built
 
-The landing page and method page are static HTML, with a small theme script. The only JavaScript-driven data view is `?u=<handle>`.
+Made in Vite and TypeScript. The landing page and method page are basic static HTML.
 
-## Commands
+Profile data comes directly from the unauthenticated GitHub REST API, so no need for backend or database or any accounts.
 
-```bash
-npm install
-npm run dev
-npm run test
-npm run build
-npm run preview
-```
+Up to 300 public repositories and 300 public events are fetched - 3 pages of 100 each.
 
-## Structure
+Successful lookups are cached in localStorage for 15 minutes to reduce getting rate limited by GitHub often by not scanning a profile again if accidentally refreshed.
 
-```text
-index.html              static landing page + native search form
-src/main.ts             boot from ?u=, cache, fetch, render, interactions
-src/api.ts              GitHub requests, pagination, typed errors
-src/cache.ts            15-minute localStorage cache + stale fallback
-src/parse.ts            handle / profile URL / repo URL parsing
-src/types.ts            API and view-model types
-src/derive.ts           raw API data -> stats, languages, details, activity
-src/format.ts           escaping, numbers, dates, relative time, URLs
-src/render.ts           profile, loading, error, section templates
-src/theme.ts            theme resolution, persistence, header toggle
-src/method.ts           theme boot for the static method page
-src/styles.css          tokens, landing, profile, responsive, print
-tests/                  pure-function tests with fixtures
-```
+There are dark and light themes which use an inline bootstrap to avoid a flash on loading. It follows the browser's theme preference by default whenever possible. Print always uses the light theme.
 
-## Data rules
 
-- Public GitHub data only.
-- The headline repo count matches GitHub and includes forks. Stars, languages, and repo-age figures use original (non-fork) repositories; forked repos are counted separately.
-- Up to 300 repositories and 300 public events are analyzed. The page says when it is working from a capped set.
-- Unauthenticated GitHub API requests are limited to 60/hour per IP. Successful lookups are cached for 15 minutes.
-- No accounts, backend, database, or API tokens.
-- Not affiliated with GitHub.
+## More screenshots:
 
-## Deploy
+![Homepage-Dark](journal-images/image.png)
+![Homepage-Light](journal-images/image-1.png)
+![Example-Report-2](journal-images/image-3.png)
+![Example-Report-3](journal-images/image-4.png)
 
-The workflow in `.github/workflows/deploy.yml` builds and deploys on pushes to `main` or `master`.
-
-1. Push the repository to GitHub.
-2. Open **Settings → Pages**.
-3. Set **Source** to **GitHub Actions**.
-4. Push to your default branch.
-
-`vite.config.ts` uses `base: './'`, so the site works under any repository path without extra configuration.
+**Built for Hack Club Crossroads.**
 
 ## License
-
-MIT. See [LICENSE](LICENSE).
+MIT.
