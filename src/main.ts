@@ -1,7 +1,7 @@
 import { fetchProfile, fetchRepoDetails, isGitHubApiError } from './api';
 import { readCache, writeCache } from './cache';
 import { deriveProfile } from './derive';
-import { formatPulledAt, truncate } from './format';
+import { formatPulledAt, stripHash, truncate } from './format';
 import { parseHandle } from './parse';
 import {
   INITIAL_VISIBLE_REPOS,
@@ -25,6 +25,8 @@ import type {
   SortKey,
 } from './types';
 
+const REQUEST_TIMEOUT_MS = 15_000;
+
 const app = document.querySelector<HTMLDivElement>('#app');
 const boot = document.querySelector<HTMLDivElement>('#boot');
 const status = document.querySelector<HTMLDivElement>('#status');
@@ -37,6 +39,7 @@ let currentSort: SortKey = 'stars';
 let shownRepos = INITIAL_VISIBLE_REPOS;
 let activityWindow: 30 | 90 = 90;
 let controller: AbortController | null = null;
+let loadSequence = 0;
 const repoDetailCache = new Map<string, RepoDetailData>();
 let repoDetailController: AbortController | null = null;
 
@@ -65,6 +68,27 @@ function isAbortError(error: unknown): boolean {
   return error instanceof DOMException && error.name === 'AbortError';
 }
 
+interface TimedRequest {
+  controller: AbortController;
+  timedOut: () => boolean;
+  clear: () => void;
+}
+
+function createTimedRequest(): TimedRequest {
+  const requestController = new AbortController();
+  let timedOut = false;
+  const timeoutId = window.setTimeout(() => {
+    timedOut = true;
+    requestController.abort();
+  }, REQUEST_TIMEOUT_MS);
+
+  return {
+    controller: requestController,
+    timedOut: () => timedOut,
+    clear: () => window.clearTimeout(timeoutId),
+  };
+}
+
 function toAppError(error: unknown): AppError {
   if (isGitHubApiError(error)) return error;
 
@@ -87,9 +111,12 @@ async function load(
   raw: string,
   options: LoadOptions = {},
 ): Promise<void> {
+  const loadId = ++loadSequence;
   const parsed = parseHandle(raw);
 
   if (!parsed.ok) {
+    controller?.abort();
+    controller = null;
     currentView = null;
     clearBoot();
     setApp(renderError({ kind: 'invalid', message: parsed.reason }, raw.trim()));
@@ -114,7 +141,7 @@ async function load(
   setCanonical(currentUrl.toString());
 
   controller?.abort();
-  controller = new AbortController();
+  controller = null;
 
   const cached = readCache(handle);
 
@@ -133,8 +160,13 @@ async function load(
   setApp(renderLoading(handle));
   announce(`Looking up ${handle}.`);
 
+  const request = createTimedRequest();
+  controller = request.controller;
+
   try {
-    const data = await fetchProfile(handle, controller.signal);
+    const data = await fetchProfile(handle, request.controller.signal);
+    if (loadId !== loadSequence) return;
+
     writeCache(data);
     currentView = deriveProfile(data);
     if (!options.preserveUi) {
@@ -143,13 +175,20 @@ async function load(
     renderCurrent(previousScroll, options.preserveUi);
     announce(`Profile loaded for ${handle}.`);
   } catch (error) {
-    if (isAbortError(error)) return;
+    if (loadId !== loadSequence) return;
+    if (isAbortError(error) && !request.timedOut()) return;
 
-    if (
-      cached &&
-      isGitHubApiError(error) &&
-      (error.kind === 'rate-limit' || error.kind === 'network')
-    ) {
+    const appError: AppError = request.timedOut()
+      ? { kind: 'timeout', message: 'GitHub took too long to respond.' }
+      : toAppError(error);
+
+    const useCache =
+      cached !== null &&
+      (appError.kind === 'timeout' ||
+        appError.kind === 'rate-limit' ||
+        appError.kind === 'network');
+
+    if (useCache) {
       currentView = deriveProfile(cached.data);
       if (!options.preserveUi) {
         activityWindow = defaultActivityWindow(currentView);
@@ -158,11 +197,14 @@ async function load(
         `Showing the last saved profile from ${formatPulledAt(cached.data.fetchedAt)}.`,
       );
       renderCurrent(previousScroll, options.preserveUi);
-      announce('Showing a cached profile because GitHub could not be reached.');
+      announce(
+        appError.kind === 'timeout'
+          ? 'Showing a cached profile because GitHub took too long to respond.'
+          : 'Showing a cached profile because GitHub could not be reached.',
+      );
       return;
     }
 
-    const appError = toAppError(error);
     currentView = null;
     clearBoot();
     setApp(renderError(appError, handle));
@@ -174,6 +216,9 @@ async function load(
         ? `No GitHub user named ${handle}.`
         : 'Could not load the profile.',
     );
+  } finally {
+    request.clear();
+    if (controller === request.controller) controller = null;
   }
 }
 
@@ -213,10 +258,11 @@ function updateMeta(view: ProfileView): void {
 }
 
 function setCanonical(url: string): void {
+  const href = stripHash(url);
   document
     .querySelector<HTMLLinkElement>('link[rel="canonical"]')
-    ?.setAttribute('href', url);
-  setMeta('property', 'og:url', url);
+    ?.setAttribute('href', href);
+  setMeta('property', 'og:url', href);
 }
 
 function setMeta(
@@ -315,27 +361,49 @@ async function openRepoDetails(
   showDialog();
 
   repoDetailController?.abort();
-  repoDetailController = new AbortController();
+  const request = createTimedRequest();
+  repoDetailController = request.controller;
 
   try {
     const details = await fetchRepoDetails(
       owner,
       repo,
-      repoDetailController.signal,
+      request.controller.signal,
     );
 
     repoDetailCache.set(key, details);
-    if (!content.isConnected) return;
+
+    if (
+      !content.isConnected ||
+      !dialog.open ||
+      repoDetailController !== request.controller
+    ) {
+      return;
+    }
+
     content.innerHTML = renderRepoDetails(details);
   } catch (error) {
-    if (isAbortError(error) || !content.isConnected) return;
+    if (
+      !content.isConnected ||
+      !dialog.open ||
+      repoDetailController !== request.controller ||
+      (isAbortError(error) && !request.timedOut())
+    ) {
+      return;
+    }
 
-    const message =
-      isGitHubApiError(error) && error.kind === 'rate-limit'
+    const message = request.timedOut()
+      ? 'GitHub took too long to respond. Try again.'
+      : isGitHubApiError(error) && error.kind === 'rate-limit'
         ? 'GitHub’s API limit is used up. Try again later.'
         : 'Could not load repository details.';
 
     content.innerHTML = renderRepoDetailsError(owner, repo, message);
+  } finally {
+    request.clear();
+    if (repoDetailController === request.controller) {
+      repoDetailController = null;
+    }
   }
 }
 

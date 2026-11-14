@@ -89,7 +89,10 @@ export function renderLoading(handle: string): string {
 
 export function renderError(error: AppError, handle = ''): string {
   const copy = errorCopy(error);
-  const canRetry = error.kind === 'network' || error.kind === 'http';
+  const canRetry =
+    error.kind === 'network' ||
+    error.kind === 'http' ||
+    error.kind === 'timeout';
 
   return `<div class="page">
     ${siteHeader(false)}
@@ -499,6 +502,11 @@ function errorCopy(error: AppError): {
     case 'network':
       return {
         title: 'Couldn’t reach GitHub.',
+        body: 'Check your connection and try again.',
+      };
+    case 'timeout':
+      return {
+        title: 'GitHub took too long.',
         body: 'Check your connection and try again.',
       };
     case 'invalid':

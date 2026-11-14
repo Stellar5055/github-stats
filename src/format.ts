@@ -181,3 +181,13 @@ export function normalizeWebsite(raw: string | null): Website | null {
     label: `${host}${path}`,
   };
 }
+
+export function stripHash(value: string): string {
+  try {
+    const url = new URL(value);
+    url.hash = '';
+    return url.toString();
+  } catch {
+    return value;
+  }
+}

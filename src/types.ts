@@ -229,7 +229,7 @@ export type ApiErrorKind =
   | 'network'
   | 'http';
 
-export type ErrorKind = ApiErrorKind | 'invalid';
+export type ErrorKind = ApiErrorKind | 'invalid' | 'timeout';
 
 export interface AppError {
   kind: ErrorKind;

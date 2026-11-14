@@ -13,6 +13,7 @@ import {
   formatRelative,
   normalizeWebsite,
   pluralize,
+  stripHash,
   truncate,
 } from '../src/format';
 
@@ -178,5 +179,20 @@ describe('normalizeWebsite', () => {
       href: 'http://example.com/',
       label: 'example.com',
     });
+  });
+});
+
+describe('stripHash', () => {
+  it('removes a fragment while keeping the query string', () => {
+    expect(
+      stripHash('https://example.com/github-stats/?u=octocat#repos'),
+    ).toBe('https://example.com/github-stats/?u=octocat');
+  });
+
+  it('leaves ordinary URLs and invalid input alone', () => {
+    expect(stripHash('https://example.com/profile')).toBe(
+      'https://example.com/profile',
+    );
+    expect(stripHash('not a url')).toBe('not a url');
   });
 });
