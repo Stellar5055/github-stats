@@ -28,3 +28,13 @@
 - Today was a Saturday, so more time. Morning I woke up at 6 a.m. and decided to learn how the browser theme preference thing worked because i havent even heard of that before. After that, at around 7 a.m. I tried to manually improve the homepage right side thing, but whatever I tried, it just looked out of place, so i decided to remove it. then i asked the agent to try making another thing to fill that space. it made this thing called Moiré field, i havent heard of that before, so i watched some youtube videos about while the agent implemented that, after it finished and I tried the website, it still felt out of place - like it made a box with the patterns (circular) inside it. so i did some manual coding - where i firstly removed the box, then expanded it to streach across the full screen verticaly, and made it split so only arcs. (sorry if this doesnt make sense, i dont know how to explain it) it still looked not very good, i even added a small fade in on the left side, still looked bad. then I decided to remove it. I asked the agent for some other ideas, and i would implement them, none of them seemed good. so i just decided to drop that interactive idea and just rearrange the ui components on my own to fill the gap on the right. this took a while, and after that it was around 12:30 p.m. then i improved spacing in the ui a little manually and then asked the ai agent, is there any immediate like improvement oppurtunities, it told some, i asked it to implement them while i learned about them - mostly twitter metadata and og image linking, then i manually worked on site metadata like title etc. then i went into google lighthouse - pagespeed to analyse site perfomance and audit it, the agent recomended this to me, i havent done it before so i learned about it and tried it. got a good score (100 for Performance, Accessibility, Best Practices, and SEO, with FCP and LCP at 0.8s, TBT at 0ms, CLS at 0, and a 2.3s Speed Index.)
 
 - In the afternoon(around 2 p.m.), the ai agent did some polish and i was done almost. now I started this JOURNAL at this time. Plan to submit to Hack Club Crossroads after rewriting the README(current one was made by AI as a placeholder) on my own.
+
+# Some Images of Final Product:
+
+_I couldnt get older ones because i decided to write this journal towards the end only_
+
+![Homepage-Dark](journal-images/image.png)
+![Homepage-Light](journal-images/image-1.png)
+![Example-Report](journal-images/image-2.png)
+![Example-Report-2](journal-images/image-3.png)
+![Example-Report-3](journal-images/image-4.png)
